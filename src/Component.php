@@ -11,6 +11,7 @@ class Component extends BaseComponent
     protected function run(): void
     {
         // @TODO implement
+        $this->getManifestManager()
     }
 
     protected function getConfigClass(): string
