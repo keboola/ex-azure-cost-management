@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MyComponent;
+namespace AzureCostExtractor;
 
 use Keboola\Component\BaseComponent;
 

@@ -1,6 +1,6 @@
-# my-component
+# Azure Cost Management Extractor
 
-[![Build Status](https://travis-ci.com/keboola/my-component.svg?branch=master)](https://travis-ci.com/keboola/my-component)
+[![Build Status](https://travis-ci.com/keboola/ex-azure-cost-management.svg?branch=master)](https://travis-ci.com/keboola/ex-azure-cost-management)
 
 > Fill in description
 
@@ -13,8 +13,8 @@
 Clone this repository and init the workspace with following command:
 
 ```
-git clone https://github.com/keboola/my-component
-cd my-component
+git clone https://github.com/keboola/ex-azure-cost-management
+cd ex-azure-cost-management
 docker-compose build
 docker-compose run --rm dev composer install --no-scripts
 ```
