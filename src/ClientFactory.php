@@ -10,15 +10,18 @@ class ClientFactory
 {
     private AccessTokenFactory $accessTokenFactory;
 
-    public function __construct(AccessTokenFactory $accessTokenFactory)
+    private string $subscriptionId;
+
+    public function __construct(AccessTokenFactory $accessTokenFactory, string $subscriptionId)
     {
         $this->accessTokenFactory = $accessTokenFactory;
+        $this->subscriptionId = $subscriptionId;
     }
 
     public function create(): Client
     {
         $accessToken = $this->accessTokenFactory->create()->getToken();
-        $scope = 'subscriptions/{subscriptionId}';
+        $scope = 'subscriptions/' . urlencode($this->subscriptionId);
         return new Client([
             'base_uri' => "https://management.azure.com/$scope/providers/Microsoft.CostManagement/",
             'headers' => [

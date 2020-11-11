@@ -8,7 +8,9 @@ Exports data from the [Azure Cost Management APIs.](https://docs.microsoft.com/e
 
 > fill in usage instructions
 
-### OAuth application 
+## OAuth
+
+### Application 
 
 OAuth app registration:
 - If you are Keboola employee, you can use existing app `Keboola Azure Cost Extractor`. Credentials are stored in [1Password](https://1password.com).
@@ -30,14 +32,16 @@ OAUTH_APP_ID=...
 OAUTH_APP_SECRET=...
 ```
 
-### OAuth scopes
+### Scopes
+
+Set the required scopes in the Azure Portal in the settings of the OAuth application.
 
 `API permissions` -> `Azure Service Management` -> `user_impersonation`
 
-### OAuth tokens
+### Tokens
 
-- OAuth tokens are result of login to specific Azure account.
-- OAuth login is not part of this repository. It is done in other parts of KBC, see [OAuth 2.0 Authentication](https://developers.keboola.com/extend/generic-extractor/configuration/api/authentication/oauth20/).
+- OAuth tokens are result of login to the specific Azure account.
+- OAuth login is not part of this repository. It is done by the [OAuth API](https://developers.keboola.com/extend/generic-extractor/configuration/api/authentication/oauth20/).
 - Component uses the OAuth tokens to authorize to the [Azure Cost Management API](https://docs.microsoft.com/en-us/rest/api/cost-management).
 - The `access_token` and `refresh_token` are part of `config.json` in `authorization.oauth_api.credentials.#data`.
 - Component uses `refresh_token` (expires in 90 days) to generate new `access_token` (expires in 1 hour).
@@ -66,6 +70,7 @@ OAUTH_APP_ID=
 OAUTH_APP_SECRET=
 OAUTH_ACCESS_TOKEN=
 OAUTH_REFRESH_TOKEN=
+TEST_SUBSCRIPTION_ID=
 ```
 
 Run the test suite using this command:

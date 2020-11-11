@@ -10,6 +10,11 @@ use Keboola\Component\JsonHelper;
 
 class Config extends BaseConfig
 {
+    public function getSubscriptionId(): string
+    {
+        return 'TODO';
+    }
+
     public function getOAuthApiData(): array
     {
         $data = parent::getOAuthApiData();
