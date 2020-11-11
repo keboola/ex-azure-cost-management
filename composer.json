@@ -4,6 +4,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.4",
+        "guzzlehttp/guzzle": "^7.2",
         "keboola/php-component": "^8.1",
         "league/oauth2-client": "^2.6"
     },
