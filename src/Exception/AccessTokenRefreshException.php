@@ -6,7 +6,7 @@ namespace AzureCostExtractor\Exception;
 
 use Keboola\CommonExceptions\UserExceptionInterface;
 
-class AccessTokenInitException extends \Exception implements UserExceptionInterface
+class AccessTokenRefreshException extends \Exception implements UserExceptionInterface
 {
 
 }
