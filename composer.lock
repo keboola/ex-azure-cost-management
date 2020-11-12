@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5b6d2d14fcdc6ef8aa7e0d7091f4ae63",
+    "content-hash": "87e9f9f12df4a14ed6cb0e0c4eea7b7b",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -337,6 +337,61 @@
                 "source": "https://github.com/keboola/php-component/tree/8.1.2"
             },
             "time": "2020-04-30T11:08:47+00:00"
+        },
+        {
+            "name": "keboola/retry",
+            "version": "0.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/retry.git",
+                "reference": "afdb190a9186b30a27c75df2aaf24a6de07efebb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/retry/zipball/afdb190a9186b30a27c75df2aaf24a6de07efebb",
+                "reference": "afdb190a9186b30a27c75df2aaf24a6de07efebb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1",
+                "psr/log": "^1.1"
+            },
+            "replace": {
+                "vkartaviy/retry": "*"
+            },
+            "require-dev": {
+                "keboola/coding-standard": "^7.0",
+                "phpstan/phpstan-shim": "^0.10",
+                "phpunit/phpunit": "7.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Retry\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola Dev",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Library for repeatable and retryable operations",
+            "keywords": [
+                "backoff",
+                "proxy",
+                "repeat",
+                "retry"
+            ],
+            "support": {
+                "issues": "https://github.com/keboola/retry/issues",
+                "source": "https://github.com/keboola/retry/tree/0.5.0"
+            },
+            "time": "2020-01-31T14:20:00+00:00"
         },
         {
             "name": "league/oauth2-client",
