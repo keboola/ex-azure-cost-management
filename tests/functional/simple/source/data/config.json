@@ -1,0 +1,14 @@
+{
+  "authorization": {
+    "oauth_api": {
+      "credentials": {
+        "#data": "%env(string:OAUTH_DATA)%",
+        "#appSecret": "%env(string:OAUTH_APP_SECRET)%",
+        "appKey": "%env(string:OAUTH_APP_ID)%"
+      }
+    }
+  },
+  "parameters": {
+    "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%"
+  }
+}

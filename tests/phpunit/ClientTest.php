@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Tests;
 
-use Keboola\AzureCostExtractor\ClientFactory;
-use GuzzleHttp\Client;
 use PHPUnit\Framework\Assert;
 
 class ClientTest extends BaseTest
@@ -18,12 +16,5 @@ class ClientTest extends BaseTest
 
         Assert::assertSame(200, $response->getStatusCode());
         Assert::assertGreaterThan(1, $response->getBody()->getSize());
-    }
-
-    private function createClient(): Client
-    {
-        $subscriptionId = (string) getenv('TEST_SUBSCRIPTION_ID');
-        $factory = new ClientFactory($this->createTokenProvider(), $subscriptionId);
-        return $factory->create();
     }
 }

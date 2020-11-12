@@ -12,7 +12,7 @@ class Config extends BaseConfig
 {
     public function getSubscriptionId(): string
     {
-        return 'TODO';
+        return $this->getValue(['parameters', 'subscriptionId']);
     }
 
     public function getOAuthApiData(): array

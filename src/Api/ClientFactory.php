@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\AzureCostExtractor;
+namespace Keboola\AzureCostExtractor\Api;
 
 use GuzzleHttp\Client;
 use Keboola\AzureCostExtractor\OAuth\TokenProvider;
