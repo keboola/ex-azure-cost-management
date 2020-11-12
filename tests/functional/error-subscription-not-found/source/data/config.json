@@ -10,7 +10,7 @@
   },
   "parameters": {
     "name": "config-row-name",
-    "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
+    "subscriptionId": "96fd974a-1234-1234-1234-0fd17d33e82d",
     "export": {
       "type": "ActualCost",
       "granularity": "Daily",

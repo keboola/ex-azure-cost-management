@@ -25,6 +25,6 @@ class ApiFactory
 
     public function create(): Api
     {
-        return new Api($this->logger, $this->client, $this->config->getMaxTries());
+        return new Api($this->logger, $this->client, $this->config);
     }
 }

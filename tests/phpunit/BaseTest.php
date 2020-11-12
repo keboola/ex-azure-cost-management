@@ -6,7 +6,7 @@ namespace Keboola\AzureCostExtractor\Tests;
 
 use ArrayObject;
 use GuzzleHttp\Client;
-use Keboola\AzureCostExtractor\ClientFactory;
+use Keboola\AzureCostExtractor\Api\ClientFactory;
 use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
 use Keboola\AzureCostExtractor\OAuth\TokenProvider;
 use PHPUnit\Framework\TestCase;

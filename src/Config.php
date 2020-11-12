@@ -10,14 +10,54 @@ use Keboola\Component\JsonHelper;
 
 class Config extends BaseConfig
 {
+    public function getMaxTries(): int
+    {
+        return (int) $this->getValue(['parameters', 'maxTries']);
+    }
+
+    public function getConfigRowName(): string
+    {
+        return $this->getValue(['parameters', 'name']);
+    }
+
     public function getSubscriptionId(): string
     {
         return $this->getValue(['parameters', 'subscriptionId']);
     }
 
-    public function getMaxTries(): int
+    public function getType(): string
     {
-        return (int) $this->getValue(['parameters', 'maxTries']);
+        return $this->getValue(['parameters', 'export', 'type']);
+    }
+
+    public function getAggregation(): string
+    {
+        return $this->getValue(['parameters', 'export', 'aggregation']);
+    }
+
+    public function getGranularity(): string
+    {
+        return $this->getValue(['parameters', 'export', 'granularity']);
+    }
+
+    public function getTimeFrame(): string
+    {
+        return $this->getValue(['parameters', 'export', 'timeDimension', 'timeFrame']);
+    }
+
+    public function getTimeDimensionStart(): string
+    {
+        return $this->getValue(['parameters', 'export', 'timeDimension', 'start']);
+    }
+
+    public function getTimeDimensionEnd(): string
+    {
+        return $this->getValue(['parameters', 'export', 'timeDimension', 'end']);
+    }
+
+    public function getGroupingDimensions(): array
+    {
+        return $this->getValue(['parameters', 'export', 'groupingDimensions']);
     }
 
     public function getOAuthApiData(): array

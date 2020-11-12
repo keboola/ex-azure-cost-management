@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor;
 
 use Psr\Log\LoggerInterface;
+use Keboola\AzureCostExtractor\Api\RequestFactory;
 use Keboola\AzureCostExtractor\Api\Api;
-use Keboola\AzureCostExtractor\Exports\ExportsGenerator;
-use Keboola\AzureCostExtractor\Exports\RequestsGenerator;
 
 class Extractor
 {
@@ -15,27 +14,18 @@ class Extractor
 
     private Api $api;
 
-    private ExportsGenerator $exportsGenerator;
+    private RequestFactory $requestFactory;
 
-    private RequestsGenerator $requestsGenerator;
-
-    public function __construct(LoggerInterface $logger, Api $api)
+    public function __construct(LoggerInterface $logger, Api $api, RequestFactory $requestFactory)
     {
         $this->logger = $logger;
         $this->api = $api;
-        $this->exportsGenerator = new ExportsGenerator();
-        $this->requestsGenerator = new RequestsGenerator();
+        $this->requestFactory = $requestFactory;
     }
 
     public function extract(): void
     {
-        $requests = $this->requestsGenerator->generateRequests(
-            $this->exportsGenerator->generateExports()
-        );
-
-        foreach ($requests as $request) {
-            $response = $this->api->send($request);
-            var_dump(json_decode($response->getBody()->getContents()));
-        }
+        $response = $this->api->send($this->requestFactory->create());
+        var_export($response->getBody()->getContents());
     }
 }
