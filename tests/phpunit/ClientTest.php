@@ -23,7 +23,7 @@ class ClientTest extends BaseTest
     private function createClient(): Client
     {
         $subscriptionId = (string) getenv('TEST_SUBSCRIPTION_ID');
-        $factory = new ClientFactory($this->createTokenFactory(), $subscriptionId);
+        $factory = new ClientFactory($this->createTokenProvider(), $subscriptionId);
         return $factory->create();
     }
 }
