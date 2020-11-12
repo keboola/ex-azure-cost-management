@@ -9,6 +9,8 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
 class ConfigDefinition extends BaseConfigDefinition
 {
+    public const DEFAULT_MAX_TRIES = 5;
+
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
@@ -18,6 +20,7 @@ class ConfigDefinition extends BaseConfigDefinition
             ->isRequired()
             ->children()
                 ->scalarNode('subscriptionId')->isRequired()->cannotBeEmpty()->end()
+                ->integerNode('maxTries')->min(1)->defaultValue(self::DEFAULT_MAX_TRIES)->end()
             ->end()
         ;
         // @formatter:on

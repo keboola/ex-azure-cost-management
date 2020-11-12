@@ -1,1 +1,1 @@
-%AThe child node "subscriptionId" at path "root.parameters" must be configured.%A
+%AExport "%a" failed: http_code="404", error_code="SubscriptionNotFound", message="The subscription '%a' could not be found.", request_body="%a", uri="%a"

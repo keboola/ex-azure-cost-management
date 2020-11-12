@@ -15,6 +15,11 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'subscriptionId']);
     }
 
+    public function getMaxTries(): int
+    {
+        return (int) $this->getValue(['parameters', 'maxTries']);
+    }
+
     public function getOAuthApiData(): array
     {
         $data = parent::getOAuthApiData();

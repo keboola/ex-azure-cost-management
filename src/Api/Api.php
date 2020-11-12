@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Api;
 
+use Keboola\AzureCostExtractor\Exception\ExportRequestRetryException;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 use Throwable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -20,15 +24,26 @@ class Api
 
     private Client $client;
 
-    public function __construct(LoggerInterface $logger, Client $client)
+    private int $maxTries;
+
+    public function __construct(LoggerInterface $logger, Client $client, int $maxTries)
     {
         $this->logger = $logger;
         $this->client = $client;
+        $this->maxTries = $maxTries;
     }
 
     public function send(ExportRequest $request): ResponseInterface
     {
-        return $this->doSend($request);
+        try {
+            /** @var ResponseInterface $response */
+            $response = $this->createRetryProxy()->call(function () use ($request) {
+                return $this->doSend($request);
+            });
+            return $response;
+        } catch (ExportRequestException $e) {
+            throw $this->isUserException($e) ? new UserException($e->getMessage(), $e->getCode(), $e) : $e;
+        }
     }
 
     private function doSend(ExportRequest $request): ResponseInterface
@@ -47,9 +62,8 @@ class Api
         $requestBody->rewind();
 
         // Format error from the response, or use exception message
-        $error =
-            $this->getMessageFromResponse($exception->getResponse()) ?:
-                sprintf('message=%s', $exception->getMessage());
+        $error = $this->getMessageFromResponse($exception->getResponse()) ?:
+            sprintf('message=%s', $exception->getMessage());
 
         // Format full exception message
         $msg = sprintf(
@@ -61,22 +75,11 @@ class Api
             $exception->getRequest()->getUri()
         );
 
-        // Convert to ExportRequestException
-        $reqException = new ExportRequestException($msg, $exception->getCode(), $exception);
-
-        // Wrap to UserException according http code
-        if (
-            // Unauthorized 401
-            $exception->getCode() === 401 ||
-            // Forbidden 403
-            $exception->getCode() === 403 ||
-            // Server error 5xx
-            ($exception->getCode() >= 500 && $exception->getCode() < 600)
-        ) {
-            return new UserException($reqException->getMessage(), $reqException->getCode(), $reqException);
+        if ($this->isRetryException($exception)) {
+            return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
-        return $reqException;
+        return new ExportRequestException($msg, $exception->getCode(), $exception);
     }
 
     private function getMessageFromResponse(?ResponseInterface $response): ?string
@@ -92,14 +95,45 @@ class Api
             return null;
         }
 
-        if (!isset($responseBody['error']['code']) || !isset($responseBody['error']['message'])) {
+        if (!isset($responseBody['error']['code'])) {
+            return null;
+        }
+
+        if (!isset($responseBody['error']['message'])) {
             return null;
         }
 
         return sprintf('error_code="%s", message="%s"', $responseBody['error']['code'], $responseBody['error']['message']);
     }
 
-    private function createRetryProxy(): void
+    private function isUserException(ExportRequestException $e): bool
     {
+        return
+            // Unauthorized 401, Forbidden 403, Not Found 404, Conflict 409
+            in_array($e->getCode(), [401, 403, 404, 409], true) ||
+            // Server error 5xx
+            ($e->getCode() >= 500 && $e->getCode() < 600);
+    }
+
+
+    private function isRetryException(RequestException $e): bool
+    {
+        // Don't retry Unauthorized 401, Forbidden 403, Not Found 404
+        if (in_array($e->getCode(), [401,403,404], true)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function createRetryProxy(): RetryProxy
+    {
+        $retryPolicy = new SimpleRetryPolicy($this->maxTries, [ExportRequestRetryException::class]);
+        $backOffPolicy = new ExponentialBackOffPolicy();
+        return new RetryProxy(
+            $retryPolicy,
+            $backOffPolicy,
+            $this->logger,
+        );
     }
 }

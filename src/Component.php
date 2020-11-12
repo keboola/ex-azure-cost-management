@@ -30,7 +30,7 @@ class Component extends BaseComponent
             $tokenDataManager
         );
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
-        $apiFactory = new ApiFactory($this->getLogger(), $clientFactory->create());
+        $apiFactory = new ApiFactory($config, $this->getLogger(), $clientFactory->create());
         $this->extractor = new Extractor($this->getLogger(), $apiFactory->create());
     }
 
