@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor;
 
 use GuzzleHttp\Client;
+use Keboola\AzureCostExtractor\OAuth\TokenProvider;
 
 class ClientFactory
 {
-    private AccessTokenFactory $accessTokenFactory;
+    private TokenProvider $tokenProvider;
 
     private string $subscriptionId;
 
-    public function __construct(AccessTokenFactory $accessTokenFactory, string $subscriptionId)
+    public function __construct(TokenProvider $tokenProvider, string $subscriptionId)
     {
-        $this->accessTokenFactory = $accessTokenFactory;
+        $this->tokenProvider = $tokenProvider;
         $this->subscriptionId = $subscriptionId;
     }
 
     public function create(): Client
     {
-        $accessToken = $this->accessTokenFactory->create()->getToken();
+        $accessToken = $this->tokenProvider->get()->getToken();
         $scope = 'subscriptions/' . urlencode($this->subscriptionId);
         return new Client([
             'base_uri' => "https://management.azure.com/$scope/providers/Microsoft.CostManagement/",
