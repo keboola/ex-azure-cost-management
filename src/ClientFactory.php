@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor;
+namespace Keboola\AzureCostExtractor;
 
 use GuzzleHttp\Client;
 

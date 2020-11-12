@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor;
+namespace Keboola\AzureCostExtractor;
 
 use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;

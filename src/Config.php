@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor;
+namespace Keboola\AzureCostExtractor;
 
-use AzureCostExtractor\Exception\InvalidAuthDataException;
+use Keboola\AzureCostExtractor\Exception\InvalidAuthDataException;
 use Keboola\Component\Config\BaseConfig;
 use Keboola\Component\JsonHelper;
 

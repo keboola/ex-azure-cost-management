@@ -19,13 +19,13 @@
     },
     "autoload": {
         "psr-4": {
-            "AzureCostExtractor\\": "src/"
+            "Keboola\\AzureCostExtractor\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "AzureCostExtractor\\Tests\\": "tests/phpunit/",
-            "AzureCostExtractor\\FunctionalTests\\": "tests/functional/"
+            "Keboola\\AzureCostExtractor\\Tests\\": "tests/phpunit/",
+            "Keboola\\AzureCostExtractor\\FunctionalTests\\": "tests/functional/"
         }
     },
     "scripts": {

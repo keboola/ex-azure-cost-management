@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor\FunctionalTests;
+namespace Keboola\AzureCostExtractor\FunctionalTests;
 
 use Keboola\DatadirTests\DatadirTestCase;
 

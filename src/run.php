@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Keboola\Component\Logger;
 use Keboola\CommonExceptions\UserExceptionInterface;
-use AzureCostExtractor\Component;
+use Keboola\AzureCostExtractor\Component;
 
 require __DIR__ . '/../vendor/autoload.php';
 

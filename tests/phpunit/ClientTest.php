@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor\Tests;
+namespace Keboola\AzureCostExtractor\Tests;
 
-use AzureCostExtractor\ClientFactory;
+use Keboola\AzureCostExtractor\ClientFactory;
 use GuzzleHttp\Client;
 use PHPUnit\Framework\Assert;
 

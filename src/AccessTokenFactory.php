@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor;
+namespace Keboola\AzureCostExtractor;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
-use AzureCostExtractor\Exception\AccessTokenInitException;
-use AzureCostExtractor\Exception\AccessTokenRefreshException;
+use Keboola\AzureCostExtractor\Exception\AccessTokenInitException;
+use Keboola\AzureCostExtractor\Exception\AccessTokenRefreshException;
 
 class AccessTokenFactory
 {

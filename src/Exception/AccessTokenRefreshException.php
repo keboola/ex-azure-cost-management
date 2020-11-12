@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor\Exception;
+namespace Keboola\AzureCostExtractor\Exception;
 
 use Keboola\CommonExceptions\UserExceptionInterface;
 

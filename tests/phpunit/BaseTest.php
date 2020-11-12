@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor\Tests;
+namespace Keboola\AzureCostExtractor\Tests;
 
-use AzureCostExtractor\AccessTokenFactory;
+use Keboola\AzureCostExtractor\AccessTokenFactory;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseTest extends TestCase

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AzureCostExtractor;
+namespace Keboola\AzureCostExtractor;
 
 use Keboola\Component\BaseComponent;
-use Keboola\Component\Config\BaseConfig;
 use Psr\Log\LoggerInterface;
 
 class Component extends BaseComponent
