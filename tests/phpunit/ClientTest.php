@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Tests;
 
-use Keboola\AzureCostExtractor\ClientFactory;
-use GuzzleHttp\Client;
+use Keboola\Component\JsonHelper;
 use PHPUnit\Framework\Assert;
 
 class ClientTest extends BaseTest
@@ -14,16 +13,16 @@ class ClientTest extends BaseTest
     {
         # https://docs.microsoft.com/en-us/rest/api/cost-management/dimensions/list
         $client = $this->createClient();
-        $response = $client->get('dimensions?api-version=2019-11-01&$top=1');
+        $response = $client->get('dimensions?api-version=2019-11-01');
 
         Assert::assertSame(200, $response->getStatusCode());
         Assert::assertGreaterThan(1, $response->getBody()->getSize());
-    }
 
-    private function createClient(): Client
-    {
-        $subscriptionId = (string) getenv('TEST_SUBSCRIPTION_ID');
-        $factory = new ClientFactory($this->createTokenProvider(), $subscriptionId);
-        return $factory->create();
+        // List dimensions
+        echo "\n\nAvailable Dimensions:\n";
+        foreach (JsonHelper::decode($response->getBody()->getContents())['value'] as $row) {
+            echo $row['properties']['category'] . "\n";
+        }
+        echo "\n\n\n";
     }
 }

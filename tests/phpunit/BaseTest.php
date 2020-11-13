@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor\Tests;
 
 use ArrayObject;
+use GuzzleHttp\Client;
+use Keboola\AzureCostExtractor\Api\ClientFactory;
 use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
 use Keboola\AzureCostExtractor\OAuth\TokenProvider;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +19,13 @@ abstract class BaseTest extends TestCase
     {
         parent::setUp();
         $this->state = new ArrayObject();
+    }
+
+    protected function createClient(): Client
+    {
+        $subscriptionId = (string) getenv('TEST_SUBSCRIPTION_ID');
+        $factory = new ClientFactory($this->createTokenProvider(), $subscriptionId);
+        return $factory->create();
     }
 
     protected function createTokenProvider(?array $oauthData = null): TokenProvider

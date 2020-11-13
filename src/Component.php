@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor;
 
 use ArrayObject;
+use Psr\Log\LoggerInterface;
+use Keboola\AzureCostExtractor\Api\ApiFactory;
+use Keboola\AzureCostExtractor\Api\ClientFactory;
+use Keboola\AzureCostExtractor\Api\RequestFactory;
 use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
 use Keboola\AzureCostExtractor\OAuth\TokenProvider;
 use Keboola\Component\BaseComponent;
-use Psr\Log\LoggerInterface;
 
 class Component extends BaseComponent
 {
@@ -28,7 +31,9 @@ class Component extends BaseComponent
             $tokenDataManager
         );
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
-        $this->extractor = new Extractor($this->getLogger(), $clientFactory->create());
+        $apiFactory = new ApiFactory($config, $this->getLogger(), $clientFactory->create());
+        $requestFactory = new RequestFactory($config);
+        $this->extractor = new Extractor($this->getLogger(), $apiFactory->create(), $requestFactory);
     }
 
     public function execute(): void
@@ -42,6 +47,7 @@ class Component extends BaseComponent
 
     protected function run(): void
     {
+        $this->extractor->extract();
     }
 
     public function getConfig(): Config
