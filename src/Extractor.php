@@ -52,7 +52,7 @@ class Extractor
         foreach ($responses as $response) {
             $count = $this->responseWriter->writeResponse($response);
             if ($count) {
-                $this->logger->info(sprintf('Written "%s" CSV rows.', $count));
+                $this->logger->info(sprintf('Written "%s" rows to the CSV file.', $count));
             } else {
                 $this->logger->info('No rows in the response.');
             }

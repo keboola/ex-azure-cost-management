@@ -65,7 +65,7 @@ class Column
                 return "$m[1]-$m[2]-$m[3]";
             }
 
-            // Convert month from 2020-01-01T00:00:00 -> 2020-01-01
+            // Convert month from 2020-01-01T00:00:00 -> 2020-01
             if (strpos($this->name, 'Month') !== false &&
                 preg_match('~^(\d{4}-\d{2})-01T00:00:00$~', $value, $m)
             ) {
