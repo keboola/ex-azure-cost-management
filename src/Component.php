@@ -33,7 +33,13 @@ class Component extends BaseComponent
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
         $apiFactory = new ApiFactory($config, $this->getLogger(), $clientFactory->create());
         $requestFactory = new RequestFactory($config);
-        $this->extractor = new Extractor($this->getLogger(), $apiFactory->create(), $requestFactory);
+        $csvResponseWriter = new CsvResponseWriter();
+        $this->extractor = new Extractor(
+            $this->getLogger(),
+            $apiFactory->create(),
+            $requestFactory,
+            $csvResponseWriter
+        );
     }
 
     public function execute(): void

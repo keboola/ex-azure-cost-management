@@ -15,7 +15,9 @@
       "type": "ActualCost",
       "granularity": "Daily",
       "timeDimension": {
-        "timeFrame": "WeekToDate"
+        "timeFrame": "Custom",
+        "start": "2020-01-01",
+        "end": "2020-10-20"
       },
       "groupingDimensions": [
         "ServiceName"

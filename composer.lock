@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "87e9f9f12df4a14ed6cb0e0c4eea7b7b",
+    "content-hash": "4bd5ec943782c29105b4e06caccbda63",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -277,6 +277,56 @@
                 "source": "https://github.com/keboola/common-exceptions/tree/master"
             },
             "time": "2020-07-07T07:42:44+00:00"
+        },
+        {
+            "name": "keboola/csv",
+            "version": "2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/php-csv.git",
+                "reference": "eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/php-csv/zipball/eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7",
+                "reference": "eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "ext-json": "*",
+                "phpunit/phpunit": "^5.7",
+                "squizlabs/php_codesniffer": "^3.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\Csv\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Keboola CSV reader and writer",
+            "homepage": "http://keboola.com",
+            "keywords": [
+                "csv",
+                "rfc4180"
+            ],
+            "support": {
+                "issues": "https://github.com/keboola/php-csv/issues",
+                "source": "https://github.com/keboola/php-csv/tree/master"
+            },
+            "time": "2020-07-28T09:27:05+00:00"
         },
         {
             "name": "keboola/php-component",

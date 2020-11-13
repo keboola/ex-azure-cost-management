@@ -16,16 +16,25 @@ class Extractor
 
     private RequestFactory $requestFactory;
 
-    public function __construct(LoggerInterface $logger, Api $api, RequestFactory $requestFactory)
-    {
+    private CsvResponseWriter $csvResponseWriter;
+
+    public function __construct(
+        LoggerInterface $logger,
+        Api $api,
+        RequestFactory $requestFactory,
+        CsvResponseWriter $csvResponseWriter
+    ) {
         $this->logger = $logger;
         $this->api = $api;
         $this->requestFactory = $requestFactory;
+        $this->csvResponseWriter = $csvResponseWriter;
     }
 
     public function extract(): void
     {
-        $response = $this->api->send($this->requestFactory->create());
-        var_export($response->getBody()->getContents());
+        $responses = $this->api->send($this->requestFactory->create());
+        foreach ($responses as $response) {
+            $this->csvResponseWriter->write($response);
+        }
     }
 }

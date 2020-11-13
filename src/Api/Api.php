@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Api;
 
+use Generator;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
 use Keboola\AzureCostExtractor\Config;
 use Throwable;
 use Psr\Http\Message\ResponseInterface;
@@ -34,12 +36,39 @@ class Api
         $this->config = $config;
     }
 
-    public function send(Request $request): ResponseInterface
+    /**
+     * Send request and load next pages, if "nextLink" is present in the response.
+     * Returns decoded JSON body
+     * @param Request $request
+     * @return Generator|array[]
+     */
+    public function send(Request $request): Generator
+    {
+        $page = 1;
+        while(true) {
+            // Send request
+            $response = $this->sendOneRequest($request);
+            $body = JsonHelper::decode($response->getBody()->getContents());
+            yield $body;
+
+            // Load next page
+            $nextLink = $body['properties']['nextLink'] ?? null;
+            if ($nextLink) {
+                $page++;
+                $request = $request->withUri(new Uri($nextLink));
+                $this->logger->info(sprintf('Loading next page %s ...', $page));
+            } else {
+                break;
+            }
+        }
+    }
+
+    public function sendOneRequest(Request $request): ResponseInterface
     {
         try {
             /** @var ResponseInterface $response */
             $response = $this->createRetryProxy()->call(function () use ($request) {
-                return $this->doSend($request);
+                return $this->doSendOneRequest($request);
             });
             return $response;
         } catch (ExportRequestException $e) {
@@ -47,7 +76,7 @@ class Api
         }
     }
 
-    private function doSend(Request $request): ResponseInterface
+    private function doSendOneRequest(Request $request): ResponseInterface
     {
         try {
             return $this->client->send($request);
