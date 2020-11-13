@@ -23,7 +23,10 @@ class Component extends BaseComponent
     public function __construct(LoggerInterface $logger)
     {
         parent::__construct($logger);
+
+        $logger = $this->getLogger();
         $config = $this->getConfig();
+
         $this->stateObject = new ArrayObject($this->getInputState());
         $tokenDataManager = new TokenDataManager($config->getOAuthApiData(), $this->stateObject);
         $tokenProvider = new TokenProvider(
@@ -32,11 +35,12 @@ class Component extends BaseComponent
             $tokenDataManager
         );
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
-        $apiFactory = new ApiFactory($config, $this->getLogger(), $clientFactory->create());
+        $apiFactory = new ApiFactory($logger, $config, $clientFactory->create());
         $requestFactory = new RequestFactory($config);
         $responseWriterFactory = new ResponseWriterFactory($this->getManifestManager(), $config, $this->getDataDir());
         $this->extractor = new Extractor(
-            $this->getLogger(),
+            $logger,
+            $config,
             $apiFactory->create(),
             $responseWriterFactory->create(),
             $requestFactory

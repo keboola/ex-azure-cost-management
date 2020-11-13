@@ -13,6 +13,8 @@ class Extractor
 {
     private LoggerInterface $logger;
 
+    private Config $config;
+
     private Api $api;
 
     private ResponseWriter $responseWriter;
@@ -21,11 +23,13 @@ class Extractor
 
     public function __construct(
         LoggerInterface $logger,
+        Config $config,
         Api $api,
         ResponseWriter $responseWriter,
         RequestFactory $requestFactory
     ) {
         $this->logger = $logger;
+        $this->config = $config;
         $this->api = $api;
         $this->responseWriter = $responseWriter;
         $this->requestFactory = $requestFactory;
@@ -33,11 +37,25 @@ class Extractor
 
     public function extract(): void
     {
+        $this->logger->info(sprintf('Export "%s" started.', $this->config->getConfigRowName()));
+
+        try {
+            $this->doExtract();
+        } finally {
+            $this->responseWriter->finish();
+        }
+    }
+
+    private function doExtract(): void
+    {
         $responses = $this->api->send($this->requestFactory->create());
         foreach ($responses as $response) {
-            $this->responseWriter->writeResponse($response);
+            $count = $this->responseWriter->writeResponse($response);
+            if ($count) {
+                $this->logger->info(sprintf('Written "%s" CSV rows.', $count));
+            } else {
+                $this->logger->info('No rows in the response.');
+            }
         }
-
-        $this->responseWriter->writeManifest();
     }
 }

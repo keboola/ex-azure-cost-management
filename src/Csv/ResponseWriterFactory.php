@@ -6,7 +6,7 @@ namespace Keboola\AzureCostExtractor\Csv;
 
 use Keboola\AzureCostExtractor\Config;
 use Keboola\Component\Manifest\ManifestManager;
-use Keboola\Csv\CsvWriter;
+use function Keboola\Utils\sanitizeColumnName as sanitize;
 
 class ResponseWriterFactory
 {
@@ -20,13 +20,14 @@ class ResponseWriterFactory
     {
         $this->manifestManager = $manifestManager;
         $this->config = $config;
-        $this->dataDir = rtrim($dataDir,'/');
+        $this->dataDir = rtrim($dataDir, '/');
     }
 
     public function create(): ResponseWriter
     {
-        $path = $this->dataDir . '/out/tables/' . $this->config->getConfigRowName() . '.csv';
-        $csvWriter = new CsvWriter($path);
-        return new ResponseWriter($csvWriter, $this->manifestManager);
+        $tableName = sanitize($this->config->getConfigRowName());
+        $csvPath = $this->dataDir . '/out/tables/' . $tableName . '.csv';
+        $columnsParser = new ColumnsParser($this->config);
+        return new ResponseWriter($csvPath, $this->manifestManager, $columnsParser);
     }
 }

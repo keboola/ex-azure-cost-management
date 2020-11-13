@@ -9,16 +9,9 @@
     }
   },
   "parameters": {
-    "name": "config-row-name",
+    "name": "ConfigRow Name",
     "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
     "export": {
-      "type": "ActualCost",
-      "granularity": "Daily",
-      "timeDimension": {
-        "timeFrame": "Custom",
-        "start": "2020-01-01",
-        "end": "2020-10-20"
-      },
       "groupingDimensions": [
         "ServiceName"
       ]

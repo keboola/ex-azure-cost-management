@@ -25,15 +25,15 @@ class Api
 {
     private LoggerInterface $logger;
 
-    private Client $client;
-
     private Config $config;
 
-    public function __construct(LoggerInterface $logger, Client $client, Config $config)
+    private Client $client;
+
+    public function __construct(LoggerInterface $logger, Config $config, Client $client)
     {
         $this->logger = $logger;
-        $this->client = $client;
         $this->config = $config;
+        $this->client = $client;
     }
 
     /**
@@ -56,7 +56,7 @@ class Api
             if ($nextLink) {
                 $page++;
                 $request = $request->withUri(new Uri($nextLink));
-                $this->logger->info(sprintf('Loading next page %s ...', $page));
+                $this->logger->info(sprintf('Loading the next results, page %s.', $page));
             } else {
                 break;
             }

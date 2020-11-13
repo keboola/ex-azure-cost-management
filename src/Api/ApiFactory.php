@@ -16,15 +16,15 @@ class ApiFactory
 
     private Client $client;
 
-    public function __construct(Config $config, LoggerInterface $logger, Client $client)
+    public function __construct(LoggerInterface $logger, Config $config, Client $client)
     {
-        $this->config = $config;
         $this->logger = $logger;
+        $this->config = $config;
         $this->client = $client;
     }
 
     public function create(): Api
     {
-        return new Api($this->logger, $this->client, $this->config);
+        return new Api($this->logger, $this->config, $this->client);
     }
 }
