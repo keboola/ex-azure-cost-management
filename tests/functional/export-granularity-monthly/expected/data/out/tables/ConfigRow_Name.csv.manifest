@@ -1,0 +1,14 @@
+{
+    "primary_key": [
+        "BillingMonth",
+        "ServiceName",
+        "ResourceLocation"
+    ],
+    "columns": [
+        "BillingMonth",
+        "ServiceName",
+        "ResourceLocation",
+        "Cost",
+        "Currency"
+    ]
+}

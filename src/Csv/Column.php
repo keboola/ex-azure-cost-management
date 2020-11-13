@@ -11,6 +11,11 @@ class Column
     public const CATEGORY_AGGREGATION = 'aggregation';
     public const CATEGORY_CURRENCY = 'currency';
 
+    public const PRIMARY_KEY_CATEGORIES = [
+        self::CATEGORY_TIME_DIMENSION,
+        self::CATEGORY_GROUPING_DIMENSION,
+    ];
+
     private int $index;
 
     private string $name;
@@ -44,6 +49,11 @@ class Column
     public function getCategory(): string
     {
         return $this->category;
+    }
+
+    public function isPrimaryKey(): bool
+    {
+        return in_array($this->category, self::PRIMARY_KEY_CATEGORIES, true);
     }
 
     public function mapValue(string $value): string

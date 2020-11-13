@@ -1,0 +1,14 @@
+{
+    "primary_key": [
+        "UsageDate",
+        "ServiceName",
+        "ResourceLocation"
+    ],
+    "columns": [
+        "UsageDate",
+        "ServiceName",
+        "ResourceLocation",
+        "CostUSD",
+        "Currency"
+    ]
+}
