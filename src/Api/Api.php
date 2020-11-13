@@ -45,7 +45,7 @@ class Api
     public function send(Request $request): Generator
     {
         $page = 1;
-        while(true) {
+        while (true) {
             // Send request
             $response = $this->sendOneRequest($request);
             $body = JsonHelper::decode($response->getBody()->getContents());

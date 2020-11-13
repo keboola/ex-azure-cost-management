@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor;
 
 use ArrayObject;
+use Keboola\AzureCostExtractor\Csv\ResponseWriterFactory;
 use Psr\Log\LoggerInterface;
 use Keboola\AzureCostExtractor\Api\ApiFactory;
 use Keboola\AzureCostExtractor\Api\ClientFactory;
@@ -33,12 +34,12 @@ class Component extends BaseComponent
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
         $apiFactory = new ApiFactory($config, $this->getLogger(), $clientFactory->create());
         $requestFactory = new RequestFactory($config);
-        $csvResponseWriter = new CsvResponseWriter();
+        $responseWriterFactory = new ResponseWriterFactory($this->getManifestManager(), $config, $this->getDataDir());
         $this->extractor = new Extractor(
             $this->getLogger(),
             $apiFactory->create(),
-            $requestFactory,
-            $csvResponseWriter
+            $responseWriterFactory->create(),
+            $requestFactory
         );
     }
 

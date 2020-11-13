@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor;
 
+use Keboola\AzureCostExtractor\Csv\ResponseWriter;
 use Psr\Log\LoggerInterface;
 use Keboola\AzureCostExtractor\Api\RequestFactory;
 use Keboola\AzureCostExtractor\Api\Api;
@@ -14,27 +15,29 @@ class Extractor
 
     private Api $api;
 
-    private RequestFactory $requestFactory;
+    private ResponseWriter $responseWriter;
 
-    private CsvResponseWriter $csvResponseWriter;
+    private RequestFactory $requestFactory;
 
     public function __construct(
         LoggerInterface $logger,
         Api $api,
-        RequestFactory $requestFactory,
-        CsvResponseWriter $csvResponseWriter
+        ResponseWriter $responseWriter,
+        RequestFactory $requestFactory
     ) {
         $this->logger = $logger;
         $this->api = $api;
+        $this->responseWriter = $responseWriter;
         $this->requestFactory = $requestFactory;
-        $this->csvResponseWriter = $csvResponseWriter;
     }
 
     public function extract(): void
     {
         $responses = $this->api->send($this->requestFactory->create());
         foreach ($responses as $response) {
-            $this->csvResponseWriter->write($response);
+            $this->responseWriter->writeResponse($response);
         }
+
+        $this->responseWriter->writeManifest();
     }
 }
