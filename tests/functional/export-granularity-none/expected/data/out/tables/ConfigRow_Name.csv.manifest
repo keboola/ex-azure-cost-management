@@ -8,5 +8,6 @@
         "ResourceLocation",
         "Cost",
         "Currency"
-    ]
+    ],
+    "incremental": true
 }

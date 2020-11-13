@@ -28,6 +28,6 @@ class ResponseWriterFactory
         $tableName = sanitize($this->config->getConfigRowName());
         $csvPath = $this->dataDir . '/out/tables/' . $tableName . '.csv';
         $columnsParser = new ColumnsParser($this->config);
-        return new ResponseWriter($csvPath, $this->manifestManager, $columnsParser);
+        return new ResponseWriter($csvPath, $this->config, $this->manifestManager, $columnsParser);
     }
 }

@@ -33,7 +33,7 @@ class DatadirTest extends DatadirTestCase
         // Clear CSV files, they contain random usage/cost data, we check only manifests
         $finder = new Finder();
         foreach ($finder->files()->in($tempDatadir . '/out/tables')->name(['*.csv']) as $csvFile) {
-            file_put_contents($csvFile->getPathname(), "\"random usage data was removed\"\n");
+            file_put_contents($csvFile->getPathname(), "\"dynamic usage data are ignored\"\n");
         }
 
         // Format manifest to be pretty printed (better to check)

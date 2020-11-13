@@ -40,6 +40,11 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'export', 'granularity']);
     }
 
+    public function isIncrementalLoad(): bool
+    {
+        return $this->getValue(['parameters', 'export', 'incremental']);
+    }
+
     public function getTimeFrame(): string
     {
         return $this->getValue(['parameters', 'export', 'timeDimension', 'timeFrame']);

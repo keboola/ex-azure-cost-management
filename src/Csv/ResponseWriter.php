@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Csv;
 
-use Generator;
+use Keboola\AzureCostExtractor\Config;
 use Keboola\Component\Manifest\ManifestManager\Options\OutTableManifestOptions;
 use Keboola\Component\Manifest\ManifestManager;
 use Keboola\Csv\CsvWriter;
@@ -14,6 +14,8 @@ class ResponseWriter
     private string $csvPath;
 
     private CsvWriter $csvWriter;
+
+    private Config $config;
 
     private ManifestManager $manifestManager;
 
@@ -26,10 +28,15 @@ class ResponseWriter
 
     private int $count = 0;
 
-    public function __construct(string $csvPath, ManifestManager $manifestManager, ColumnsParser $columnsParser)
-    {
+    public function __construct(
+        string $csvPath,
+        Config $config,
+        ManifestManager $manifestManager,
+        ColumnsParser $columnsParser
+    ) {
         $this->csvPath = $csvPath;
         $this->csvWriter = new CsvWriter($csvPath);
+        $this->config = $config;
         $this->manifestManager = $manifestManager;
         $this->columnsParser = $columnsParser;
     }
@@ -81,6 +88,7 @@ class ResponseWriter
         $primaryKeys = array_filter($columns, fn(Column $column) => $column->isPrimaryKey());
 
         $options = new OutTableManifestOptions();
+        $options->setIncremental($this->config->isIncrementalLoad());
         $options->setColumns(array_map(fn(Column $column) => $column->getName(), $columns));
         $options->setPrimaryKeyColumns(array_map(fn(Column $column) => $column->getName(), $primaryKeys));
         $this->manifestManager->writeTableManifest(basename($this->csvPath), $options);

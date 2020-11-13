@@ -10,5 +10,6 @@
         "ResourceLocation",
         "CostUSD",
         "Currency"
-    ]
+    ],
+    "incremental": true
 }

@@ -41,6 +41,7 @@ class ConfigTest extends BaseTest
                     'export' => [
                         'type' => 'ActualCost',
                         'granularity' => 'Daily',
+                        'incremental' => false,
                         'timeDimension' => [
                             'timeFrame' => ConfigDefinition::TIME_FRAME_CUSTOM,
                             'start' => '2020-01-01',

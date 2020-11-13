@@ -9,5 +9,5 @@
         "Cost",
         "Currency"
     ],
-    "incremental": true
+    "incremental": false
 }

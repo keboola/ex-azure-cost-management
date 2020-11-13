@@ -8,5 +8,6 @@
         "Meter",
         "UsageQuantity",
         "Currency"
-    ]
+    ],
+    "incremental": true
 }
