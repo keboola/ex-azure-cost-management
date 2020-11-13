@@ -12,9 +12,12 @@ class ColumnsParser
 {
     private Config $config;
 
+    private array $groupingDimensions;
+
     public function __construct(Config $config)
     {
         $this->config = $config;
+        $this->groupingDimensions = $config->getGroupingDimensions();
     }
 
     public function parse(array $response): array
@@ -30,7 +33,7 @@ class ColumnsParser
         }
 
         // Sort columns by category
-        self::sortColumns($columns);
+        $this->sortColumns($columns);
 
         return $columns;
     }
@@ -55,35 +58,38 @@ class ColumnsParser
             return Column::CATEGORY_AGGREGATION;
         }
 
-        if (in_array($name, $this->config->getGroupingDimensions(), true)) {
+        if (in_array($name, $this->groupingDimensions, true)) {
             return Column::CATEGORY_GROUPING_DIMENSION;
         }
 
-        if (strpos($name, 'Date') !== false) {
+        if (strpos($name, 'Date') !== false ||
+            strpos($name, 'Month') !== false
+        ) {
             return Column::CATEGORY_TIME_DIMENSION;
         }
 
         throw new UnexpectedColumnException(sprintf('Found unexpected column "%s" in the API response.', $name));
     }
 
-    private static function sortColumns(array &$columns): void
+    private function sortColumns(array &$columns): void
     {
         usort($columns, function (Column $a, Column $b) {
-            return self::getColumnOrder($a) <=> self::getColumnOrder($b);
+            return $this->getColumnOrder($a) <=> $this->getColumnOrder($b);
         });
     }
 
-    private static function getColumnOrder(Column $column): int
+    private function getColumnOrder(Column $column): int
     {
         switch ($column->getCategory()) {
             case Column::CATEGORY_TIME_DIMENSION:
                 return 1;
             case Column::CATEGORY_GROUPING_DIMENSION:
-                return 2;
+                // Sort by the order in the config
+                return 2 + (int) array_search($column->getName(), $this->groupingDimensions, true);
             case Column::CATEGORY_AGGREGATION:
-                return 3;
+                return 901;
             default:
-                return 10;
+                return 1000;
         }
     }
 }

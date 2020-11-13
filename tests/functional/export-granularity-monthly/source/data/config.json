@@ -1,0 +1,27 @@
+{
+  "authorization": {
+    "oauth_api": {
+      "credentials": {
+        "#data": "%env(string:OAUTH_DATA)%",
+        "#appSecret": "%env(string:OAUTH_APP_SECRET)%",
+        "appKey": "%env(string:OAUTH_APP_ID)%"
+      }
+    }
+  },
+  "parameters": {
+    "name": "ConfigRow Name",
+    "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
+    "export": {
+      "granularity": "Monthly",
+      "timeDimension": {
+        "timeFrame": "Custom",
+        "start": "2020-02-01",
+        "end": "2020-03-01"
+      },
+      "groupingDimensions": [
+        "ServiceName",
+        "ResourceLocation"
+      ]
+    }
+  }
+}

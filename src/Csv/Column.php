@@ -48,10 +48,18 @@ class Column
 
     public function mapValue(string $value): string
     {
-        // Convert date from 20201031 -> 2020-10-31
+
         if ($this->category === self::CATEGORY_TIME_DIMENSION) {
+            // Convert date from 20201031 -> 2020-10-31
             if (preg_match('~^(\d{4})(\d{2})(\d{2})$~', $value, $m)) {
                 return "$m[1]-$m[2]-$m[3]";
+            }
+
+            // Convert month from 2020-01-01T00:00:00 -> 2020-01-01
+            if (strpos($this->name, 'Month') !== false &&
+                preg_match('~^(\d{4}-\d{2})-01T00:00:00$~', $value, $m)
+            ) {
+                return "$m[1]";
             }
         }
 

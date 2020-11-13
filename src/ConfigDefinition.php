@@ -125,7 +125,7 @@ class ConfigDefinition extends BaseConfigDefinition
         // Custom timeFrame, but missing start or end
         if ($customTimeFrame && (!isset($timeDimension['start']) || !isset($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
-                'Missing configuration parameters "export.timeDimension.start/end" for timeFrame="%s".',
+                'Missing configuration parameters "parameters.export.timeDimension.start/end" for timeFrame="%s".',
                 $timeFrame
             ));
         }
@@ -133,9 +133,20 @@ class ConfigDefinition extends BaseConfigDefinition
         // Not custom timeFrame, but start or end is set
         if (!$customTimeFrame && (isset($timeDimension['start']) || isset($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
-                'Configuration parameters "export.timeDimension.start/end" are not compatible with timeFrame="%s".',
+                'Configuration parameters "parameters.export.timeDimension.start/end" ' .
+                'are not compatible with timeFrame="%s".',
                 $timeFrame
             ));
+        }
+
+        foreach (['start', 'end'] as $key) {
+            if (isset($timeDimension[$key]) and !preg_match('~^\d{4}-\d{2}-\d{2}$~', $timeDimension[$key])) {
+                throw new InvalidConfigurationException(sprintf(
+                    'Invalid date "%s" in "parameters.export.timeDimension.%s", please use "YYYY-MM-DD" format.',
+                    $timeDimension[$key],
+                    $key
+                ));
+            }
         }
 
         return $parameters;

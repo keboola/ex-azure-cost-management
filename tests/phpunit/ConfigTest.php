@@ -100,7 +100,7 @@ class ConfigTest extends BaseTest
         $config['parameters']['export']['timeDimension']['end'] = '2020-02-31';
         yield 'invalid-time-frame-and-start-end' => [
             $config,
-            'Configuration parameters "export.timeDimension.start/end" ' .
+            'Configuration parameters "parameters.export.timeDimension.start/end" ' .
             'are not compatible with timeFrame="MonthToDate".',
         ];
 
@@ -108,7 +108,7 @@ class ConfigTest extends BaseTest
         $config['parameters']['export']['timeDimension']['timeFrame'] = ConfigDefinition::TIME_FRAME_CUSTOM;
         yield 'invalid-time-frame-custom-without-start-end' => [
             $config,
-            'Missing configuration parameters "export.timeDimension.start/end" for timeFrame="Custom".',
+            'Missing configuration parameters "parameters.export.timeDimension.start/end" for timeFrame="Custom".',
         ];
     }
 

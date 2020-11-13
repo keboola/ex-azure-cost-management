@@ -143,8 +143,8 @@ class Api
     private function isUserException(ExportRequestException $e): bool
     {
         return
-            // Unauthorized 401, Forbidden 403, Not Found 404, Conflict 409
-            in_array($e->getCode(), [401, 403, 404, 409], true) ||
+            // Bad Request 400 (eg. bad date), Unauthorized 401, Forbidden 403, Not Found 404, Conflict 409
+            in_array($e->getCode(), [400, 401, 403, 404, 409], true) ||
             // Server error 5xx
             ($e->getCode() >= 500 && $e->getCode() < 600);
     }
