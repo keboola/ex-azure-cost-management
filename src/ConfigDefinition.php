@@ -6,7 +6,6 @@ namespace Keboola\AzureCostExtractor;
 
 use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigDefinition extends BaseConfigDefinition
@@ -60,20 +59,6 @@ class ConfigDefinition extends BaseConfigDefinition
         'ResourceGuid',
     ];
 
-    protected function getRootDefinition(TreeBuilder $treeBuilder): ArrayNodeDefinition
-    {
-        $rootNode = parent::getRootDefinition($treeBuilder);
-
-        // @formatter:off
-        /** @noinspection NullPointerExceptionInspection */
-        $rootNode
-            ->children()
-                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end();
-        // @formatter:on
-
-        return $rootNode;
-    }
-
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
@@ -88,6 +73,7 @@ class ConfigDefinition extends BaseConfigDefinition
                 ->arrayNode('export')
                     ->isRequired()
                     ->children()
+                        ->scalarNode('destination')->isRequired()->cannotBeEmpty()->end()
                         ->enumNode('type')
                             ->values(self::TYPE_VALUES)
                             ->defaultValue('ActualCost')
@@ -110,8 +96,8 @@ class ConfigDefinition extends BaseConfigDefinition
                                     ->values(self::TIME_FRAME_VALUES)
                                     ->defaultValue('MonthToDate')
                                 ->end()
-                                ->scalarNode('start')->defaultNull()->cannotBeEmpty()->end()
-                                ->scalarNode('end')->defaultNull()->cannotBeEmpty()->end()
+                                ->scalarNode('start')->defaultNull()->end()
+                                ->scalarNode('end')->defaultNull()->end()
                             ->end()
                         ->end()
                         ->arrayNode('groupingDimensions')
@@ -140,7 +126,7 @@ class ConfigDefinition extends BaseConfigDefinition
         $customTimeFrame = $timeFrame === self::TIME_FRAME_CUSTOM;
 
         // Custom timeFrame, but missing start or end
-        if ($customTimeFrame && (!isset($timeDimension['start']) || !isset($timeDimension['end']))) {
+        if ($customTimeFrame && (empty($timeDimension['start']) || empty($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
                 'Missing configuration parameters "parameters.export.timeDimension.start/end" for timeFrame="%s".',
                 $timeFrame
@@ -148,16 +134,17 @@ class ConfigDefinition extends BaseConfigDefinition
         }
 
         // Not custom timeFrame, but start or end is set
-        if (!$customTimeFrame && (isset($timeDimension['start']) || isset($timeDimension['end']))) {
+        if (!$customTimeFrame && (!empty($timeDimension['start']) || !empty($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
                 'Configuration parameters "parameters.export.timeDimension.start/end" ' .
-                'are not compatible with timeFrame="%s".',
-                $timeFrame
+                'are not compatible with timeFrame="%s", please use timeFrame="%s".',
+                $timeFrame,
+                ConfigDefinition::TIME_FRAME_CUSTOM
             ));
         }
 
         foreach (['start', 'end'] as $key) {
-            if (isset($timeDimension[$key]) and !preg_match('~^\d{4}-\d{2}-\d{2}$~', $timeDimension[$key])) {
+            if (!empty($timeDimension[$key]) and !preg_match('~^\d{4}-\d{2}-\d{2}$~', $timeDimension[$key])) {
                 throw new InvalidConfigurationException(sprintf(
                     'Invalid date "%s" in "parameters.export.timeDimension.%s", please use "YYYY-MM-DD" format.',
                     $timeDimension[$key],

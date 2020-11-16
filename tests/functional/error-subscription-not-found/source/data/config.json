@@ -9,9 +9,9 @@
     }
   },
   "parameters": {
-    "name": "config-row-name",
     "subscriptionId": "96fd974a-1234-1234-1234-0fd17d33e82d",
     "export": {
+      "destination": "destination-table",
       "type": "ActualCost",
       "granularity": "Daily",
       "timeDimension": {

@@ -9,9 +9,9 @@
     }
   },
   "parameters": {
-    "name": "ConfigRow Name",
     "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
     "export": {
+      "destination": "destination-table",
       "groupingDimensions": [
         "ServiceName"
       ]

@@ -98,7 +98,7 @@ class Api
         // Format full exception message
         $msg = sprintf(
             'Export "%s" failed: http_code="%d", %s, request_body="%s", uri="%s"',
-            $this->config->getConfigRowName(),
+            $this->config->getDestination(),
             $exception->getCode(),
             $error,
             $requestBody->getContents(),

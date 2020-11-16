@@ -25,8 +25,7 @@ class ResponseWriterFactory
 
     public function create(): ResponseWriter
     {
-        $tableName = sanitize($this->config->getConfigRowName());
-        $csvPath = $this->dataDir . '/out/tables/' . $tableName . '.csv';
+        $csvPath = $this->dataDir . '/out/tables/' . $this->config->getDestination() . '.csv';
         $columnsParser = new ColumnsParser($this->config);
         return new ResponseWriter($csvPath, $this->config, $this->manifestManager, $columnsParser);
     }
