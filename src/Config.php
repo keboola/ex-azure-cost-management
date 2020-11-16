@@ -17,7 +17,7 @@ class Config extends BaseConfig
 
     public function getConfigRowName(): string
     {
-        return $this->getValue(['parameters', 'name']);
+        return $this->getValue(['name']);
     }
 
     public function getSubscriptionId(): string

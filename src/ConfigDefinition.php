@@ -6,6 +6,7 @@ namespace Keboola\AzureCostExtractor;
 
 use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigDefinition extends BaseConfigDefinition
@@ -59,6 +60,20 @@ class ConfigDefinition extends BaseConfigDefinition
         'ResourceGuid',
     ];
 
+    protected function getRootDefinition(TreeBuilder $treeBuilder): ArrayNodeDefinition
+    {
+        $rootNode = parent::getRootDefinition($treeBuilder);
+
+        // @formatter:off
+        /** @noinspection NullPointerExceptionInspection */
+        $rootNode
+            ->children()
+                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end();
+        // @formatter:on
+
+        return $rootNode;
+    }
+
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
@@ -68,7 +83,6 @@ class ConfigDefinition extends BaseConfigDefinition
         $parametersNode
             ->isRequired()
             ->children()
-                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('subscriptionId')->isRequired()->cannotBeEmpty()->end()
                 ->integerNode('maxTries')->min(1)->defaultValue(self::DEFAULT_MAX_TRIES)->end()
                 ->arrayNode('export')
