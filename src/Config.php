@@ -15,9 +15,9 @@ class Config extends BaseConfig
         return (int) $this->getValue(['parameters', 'maxTries']);
     }
 
-    public function getConfigRowName(): string
+    public function getDestination(): string
     {
-        return $this->getValue(['name']);
+        return $this->getValue(['parameters', 'export', 'destination']);
     }
 
     public function getSubscriptionId(): string

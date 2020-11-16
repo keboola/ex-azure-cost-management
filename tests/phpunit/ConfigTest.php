@@ -35,10 +35,10 @@ class ConfigTest extends BaseTest
         yield 'full' => [
             [
                 'parameters' => [
-                    'name' => 'configRowName',
                     'subscriptionId' => '1234',
                     'maxTries' => 4,
                     'export' => [
+                        'destination' => 'destination-table',
                         'type' => 'ActualCost',
                         'granularity' => 'Daily',
                         'incremental' => false,
@@ -67,7 +67,7 @@ class ConfigTest extends BaseTest
 
         yield 'empty-parameters' => [
             ['parameters' => []],
-            'The child node "name" at path "root.parameters" must be configured.',
+            'The child node "subscriptionId" at path "root.parameters" must be configured.',
         ];
 
         $config = $this->getValidMinimalConfig();
@@ -102,7 +102,7 @@ class ConfigTest extends BaseTest
         yield 'invalid-time-frame-and-start-end' => [
             $config,
             'Configuration parameters "parameters.export.timeDimension.start/end" ' .
-            'are not compatible with timeFrame="MonthToDate".',
+            'are not compatible with timeFrame="MonthToDate", please use timeFrame="Custom".',
         ];
 
         $config = $this->getValidMinimalConfig();
@@ -117,9 +117,9 @@ class ConfigTest extends BaseTest
     {
         return [
             'parameters' => [
-                'name' => 'configRowName',
                 'subscriptionId' => '1234',
                 'export' => [
+                    'destination' => 'destination-table',
                     'groupingDimensions' => ['ServiceName'],
                 ],
             ],

@@ -37,7 +37,7 @@ class Extractor
 
     public function extract(): void
     {
-        $this->logger->info(sprintf('Export "%s" started.', $this->config->getConfigRowName()));
+        $this->logger->info(sprintf('Export "%s" started.', $this->config->getDestination()));
 
         try {
             $this->doExtract();

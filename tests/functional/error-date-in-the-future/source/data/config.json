@@ -9,9 +9,9 @@
     }
   },
   "parameters": {
-    "name": "ConfigRow Name",
     "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
     "export": {
+      "destination": "destination-table",
       "timeDimension": {
         "timeFrame": "Custom",
         "start": "2050-01-01",
