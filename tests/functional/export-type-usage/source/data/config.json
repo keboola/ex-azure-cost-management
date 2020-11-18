@@ -9,16 +9,18 @@
     }
   },
   "parameters": {
-    "name": "config-row-name",
     "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
     "export": {
-      "type": "ActualCost",
-      "granularity": "Daily",
+      "destination": "destination-table",
+      "type": "Usage",
+      "aggregation": "UsageQuantity",
+      "granularity": "None",
       "timeDimension": {
-        "timeFrame": "WeekToDate"
+        "timeFrame": "TheLastMonth"
       },
       "groupingDimensions": [
-        "ServiceName"
+        "ServiceName",
+        "Meter"
       ]
     }
   }

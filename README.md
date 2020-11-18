@@ -6,7 +6,25 @@ Exports data from the [Azure Cost Management APIs.](https://docs.microsoft.com/e
 
 # Usage
 
-> fill in usage instructions
+## Configuration
+
+The configuration `config.json` contains following properties in `parameters` key: 
+- `subscriptionId` - string (required): ID of the [Azure Subscription](https://techcommunity.microsoft.com/t5/azure/understanding-azure-account-subscription-and-directory/m-p/34800).
+- `maxTries` - integer (optional): Number of the max tries if an error occurred. Default `5`.
+- `export` - object (required): Configuration of the export.
+    - `destination` - string (required): Name of the target table in the bucket.
+    - `groupingDimensions` - enum[] (required):
+        - An array that contains one or more `group by` columns.
+        - These columns will be part of the output table.
+        - Available values: `ServiceName`, `ResourceGroupName`, `ResourceLocation`, `Meter`, [read the whole list](https://github.com/keboola/ex-azure-cost-management/blob/master/src/ConfigDefinition.php#L40) ... 
+    - `type` - enum (optional): One from: `ActualCost` - default, `AmortizedCost`, `Usage`.
+    - `aggregation` - enum (optional): Aggregation's column, one from: `Cost` - default, `CostUSD`, `PreTaxCostUSD`, `UsageQuantity`, `PreTaxCost`.
+    - `granularity` - enum (optional): One from: `None`, `Daily`, `Monthly`.
+    - `incremental` - boolean (optional): Enables [Incremental Loading](https://help.keboola.com/storage/tables/#incremental-loading). Default `true`.
+    - `timeDimension` - object (optional): Time dimensions of the export.
+        - `timeFrame` - enum (optional): One from: `MonthToDate` - default, `WeekToDate`, `BillingMonthToDate`, `TheLastMonth`, `TheLastBillingMonth`, `Custom`.
+        - `start` - string (optional): Start date of the `Custom` time frame in `YYYY-MM-DD` format.
+        - `end` - string (optional): End date of the `Custom` time frame in `YYYY-MM-DD` format.
 
 ## OAuth
 
@@ -25,7 +43,7 @@ Set `Redirect URIs`:
 - Click `Save`
 
 
-Please store credentials in `.env` file.
+Please, store credentials in `.env` file.
 ```.env
 OAUTH_APP_NAME="Keboola Azure Cost Extractor"
 OAUTH_APP_ID=...

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "87e9f9f12df4a14ed6cb0e0c4eea7b7b",
+    "content-hash": "3a0b65c171fe284aa026de1bb734ebc3",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -279,6 +279,56 @@
             "time": "2020-07-07T07:42:44+00:00"
         },
         {
+            "name": "keboola/csv",
+            "version": "2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/php-csv.git",
+                "reference": "eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/php-csv/zipball/eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7",
+                "reference": "eb5a835a855f1bf03ddaa330e7b22fc5fb6042d7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "ext-json": "*",
+                "phpunit/phpunit": "^5.7",
+                "squizlabs/php_codesniffer": "^3.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\Csv\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Keboola CSV reader and writer",
+            "homepage": "http://keboola.com",
+            "keywords": [
+                "csv",
+                "rfc4180"
+            ],
+            "support": {
+                "issues": "https://github.com/keboola/php-csv/issues",
+                "source": "https://github.com/keboola/php-csv/tree/master"
+            },
+            "time": "2020-07-28T09:27:05+00:00"
+        },
+        {
             "name": "keboola/php-component",
             "version": "8.1.2",
             "source": {
@@ -339,6 +389,124 @@
             "time": "2020-04-30T11:08:47+00:00"
         },
         {
+            "name": "keboola/php-datatypes",
+            "version": "4.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/php-datatypes.git",
+                "reference": "c70b78804e49472121a0f3604ef9740c8612beb6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/php-datatypes/zipball/c70b78804e49472121a0f3604ef9740c8612beb6",
+                "reference": "c70b78804e49472121a0f3604ef9740c8612beb6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "~0.4",
+                "php-parallel-lint/php-parallel-lint": "^1.1",
+                "phpstan/phpstan": "~0.9",
+                "phpunit/phpunit": "^5.0",
+                "squizlabs/php_codesniffer": "^2.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\Datatype\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "PHP datatypes for databases",
+            "support": {
+                "issues": "https://github.com/keboola/php-datatypes/issues",
+                "source": "https://github.com/keboola/php-datatypes/tree/4.9.0"
+            },
+            "time": "2020-11-11T10:55:41+00:00"
+        },
+        {
+            "name": "keboola/php-utils",
+            "version": "4.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/php-utils.git",
+                "reference": "f5be83a50b5c4858f5698747e8a795048a89c382"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/php-utils/zipball/f5be83a50b5c4858f5698747e8a795048a89c382",
+                "reference": "f5be83a50b5c4858f5698747e8a795048a89c382",
+                "shasum": ""
+            },
+            "require": {
+                "keboola/sanitizer": "^0.1",
+                "php": ">=5.6.0",
+                "seld/jsonlint": "^1.4"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "~0.2",
+                "phpunit/phpunit": "~5.0",
+                "squizlabs/php_codesniffer": "~2.4"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Keboola/Utils/jsonDecode.php",
+                    "src/Keboola/Utils/sanitizeUtf8.php",
+                    "src/Keboola/Utils/objectToArray.php",
+                    "src/Keboola/Utils/formatDateTime.php",
+                    "src/Keboola/Utils/replaceDates.php",
+                    "src/Keboola/Utils/replaceDatesInArray.php",
+                    "src/Keboola/Utils/buildUrl.php",
+                    "src/Keboola/Utils/httpBuildUrl.php",
+                    "src/Keboola/Utils/returnBytes.php",
+                    "src/Keboola/Utils/camelize.php",
+                    "src/Keboola/Utils/getDataFromPath.php",
+                    "src/Keboola/Utils/isValidDateTimeString.php",
+                    "src/Keboola/Utils/flattenArray.php",
+                    "src/Keboola/Utils/arrayToObject.php",
+                    "src/Keboola/Utils/isEmptyObject.php",
+                    "src/Keboola/Utils/stripInvalidUtf16.php",
+                    "src/Keboola/Utils/toAscii.php",
+                    "src/Keboola/Utils/sanitizeColumnName.php",
+                    "src/Keboola/Utils/formatBytes.php"
+                ],
+                "psr-0": {
+                    "Keboola\\Utils": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Misc utility functions",
+            "keywords": [
+                "utility"
+            ],
+            "support": {
+                "issues": "https://github.com/keboola/php-utils/issues",
+                "source": "https://github.com/keboola/php-utils/tree/master"
+            },
+            "time": "2019-10-04T20:55:45+00:00"
+        },
+        {
             "name": "keboola/retry",
             "version": "0.5.0",
             "source": {
@@ -392,6 +560,51 @@
                 "source": "https://github.com/keboola/retry/tree/0.5.0"
             },
             "time": "2020-01-31T14:20:00+00:00"
+        },
+        {
+            "name": "keboola/sanitizer",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/sanitizer.git",
+                "reference": "6edda00cd177409a33f180b8f12bdad89bf893c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/sanitizer/zipball/6edda00cd177409a33f180b8f12bdad89bf893c5",
+                "reference": "6edda00cd177409a33f180b8f12bdad89bf893c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "jakub-onderka/php-parallel-lint": "^1.0",
+                "phpunit/phpunit": "^5.7",
+                "squizlabs/php_codesniffer": "^3.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\Utils\\Sanitizer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Column name sanitizer",
+            "support": {
+                "issues": "https://github.com/keboola/sanitizer/issues",
+                "source": "https://github.com/keboola/sanitizer/tree/0.1.0"
+            },
+            "time": "2019-01-11T10:21:17+00:00"
         },
         {
             "name": "league/oauth2-client",
@@ -806,6 +1019,69 @@
                 "source": "https://github.com/ralouphie/getallheaders/tree/develop"
             },
             "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
+            "name": "seld/jsonlint",
+            "version": "1.8.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Seldaek/jsonlint.git",
+                "reference": "9ad6ce79c342fbd44df10ea95511a1b24dee5b57"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/9ad6ce79c342fbd44df10ea95511a1b24dee5b57",
+                "reference": "9ad6ce79c342fbd44df10ea95511a1b24dee5b57",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3 || ^7.0 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0"
+            },
+            "bin": [
+                "bin/jsonlint"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Seld\\JsonLint\\": "src/Seld/JsonLint/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be"
+                }
+            ],
+            "description": "JSON Linter",
+            "keywords": [
+                "json",
+                "linter",
+                "parser",
+                "validator"
+            ],
+            "support": {
+                "issues": "https://github.com/Seldaek/jsonlint/issues",
+                "source": "https://github.com/Seldaek/jsonlint/tree/1.8.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/Seldaek",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/seld/jsonlint",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2020-11-11T09:19:24+00:00"
         },
         {
             "name": "symfony/config",

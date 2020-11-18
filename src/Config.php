@@ -15,9 +15,9 @@ class Config extends BaseConfig
         return (int) $this->getValue(['parameters', 'maxTries']);
     }
 
-    public function getConfigRowName(): string
+    public function getDestination(): string
     {
-        return $this->getValue(['parameters', 'name']);
+        return $this->getValue(['parameters', 'export', 'destination']);
     }
 
     public function getSubscriptionId(): string
@@ -38,6 +38,11 @@ class Config extends BaseConfig
     public function getGranularity(): string
     {
         return $this->getValue(['parameters', 'export', 'granularity']);
+    }
+
+    public function isIncrementalLoad(): bool
+    {
+        return $this->getValue(['parameters', 'export', 'incremental']);
     }
 
     public function getTimeFrame(): string

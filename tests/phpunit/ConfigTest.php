@@ -35,12 +35,13 @@ class ConfigTest extends BaseTest
         yield 'full' => [
             [
                 'parameters' => [
-                    'name' => 'configRowName',
                     'subscriptionId' => '1234',
                     'maxTries' => 4,
                     'export' => [
+                        'destination' => 'destination-table',
                         'type' => 'ActualCost',
                         'granularity' => 'Daily',
+                        'incremental' => false,
                         'timeDimension' => [
                             'timeFrame' => ConfigDefinition::TIME_FRAME_CUSTOM,
                             'start' => '2020-01-01',
@@ -66,7 +67,7 @@ class ConfigTest extends BaseTest
 
         yield 'empty-parameters' => [
             ['parameters' => []],
-            'The child node "name" at path "root.parameters" must be configured.',
+            'The child node "subscriptionId" at path "root.parameters" must be configured.',
         ];
 
         $config = $this->getValidMinimalConfig();
@@ -100,15 +101,15 @@ class ConfigTest extends BaseTest
         $config['parameters']['export']['timeDimension']['end'] = '2020-02-31';
         yield 'invalid-time-frame-and-start-end' => [
             $config,
-            'Configuration parameters "export.timeDimension.start/end" ' .
-            'are not compatible with timeFrame="MonthToDate".',
+            'Configuration parameters "parameters.export.timeDimension.start/end" ' .
+            'are not compatible with timeFrame="MonthToDate", please use timeFrame="Custom".',
         ];
 
         $config = $this->getValidMinimalConfig();
         $config['parameters']['export']['timeDimension']['timeFrame'] = ConfigDefinition::TIME_FRAME_CUSTOM;
         yield 'invalid-time-frame-custom-without-start-end' => [
             $config,
-            'Missing configuration parameters "export.timeDimension.start/end" for timeFrame="Custom".',
+            'Missing configuration parameters "parameters.export.timeDimension.start/end" for timeFrame="Custom".',
         ];
     }
 
@@ -116,9 +117,9 @@ class ConfigTest extends BaseTest
     {
         return [
             'parameters' => [
-                'name' => 'configRowName',
                 'subscriptionId' => '1234',
                 'export' => [
+                    'destination' => 'destination-table',
                     'groupingDimensions' => ['ServiceName'],
                 ],
             ],

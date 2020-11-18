@@ -43,7 +43,7 @@ class RequestFactory
                     $this->config->getGroupingDimensions()
                 ),
                 'aggregation' => [
-                    'cost' => [
+                    $this->config->getAggregation() => [
                         'name' => $this->config->getAggregation(),
                         'function' => 'Sum',
                     ],

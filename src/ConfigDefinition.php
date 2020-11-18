@@ -68,12 +68,12 @@ class ConfigDefinition extends BaseConfigDefinition
         $parametersNode
             ->isRequired()
             ->children()
-                ->scalarNode('name')->isRequired()->cannotBeEmpty()->end()
                 ->scalarNode('subscriptionId')->isRequired()->cannotBeEmpty()->end()
                 ->integerNode('maxTries')->min(1)->defaultValue(self::DEFAULT_MAX_TRIES)->end()
                 ->arrayNode('export')
                     ->isRequired()
                     ->children()
+                        ->scalarNode('destination')->isRequired()->cannotBeEmpty()->end()
                         ->enumNode('type')
                             ->values(self::TYPE_VALUES)
                             ->defaultValue('ActualCost')
@@ -86,6 +86,9 @@ class ConfigDefinition extends BaseConfigDefinition
                             ->values(self::GRANULARITY_VALUES)
                             ->defaultValue('Daily')
                         ->end()
+                        ->booleanNode('incremental')
+                            ->defaultValue(true)
+                        ->end()
                         ->arrayNode('timeDimension')
                             ->addDefaultsIfNotSet()
                             ->children()
@@ -93,8 +96,8 @@ class ConfigDefinition extends BaseConfigDefinition
                                     ->values(self::TIME_FRAME_VALUES)
                                     ->defaultValue('MonthToDate')
                                 ->end()
-                                ->scalarNode('start')->defaultNull()->cannotBeEmpty()->end()
-                                ->scalarNode('end')->defaultNull()->cannotBeEmpty()->end()
+                                ->scalarNode('start')->defaultNull()->end()
+                                ->scalarNode('end')->defaultNull()->end()
                             ->end()
                         ->end()
                         ->arrayNode('groupingDimensions')
@@ -123,19 +126,31 @@ class ConfigDefinition extends BaseConfigDefinition
         $customTimeFrame = $timeFrame === self::TIME_FRAME_CUSTOM;
 
         // Custom timeFrame, but missing start or end
-        if ($customTimeFrame && (!isset($timeDimension['start']) || !isset($timeDimension['end']))) {
+        if ($customTimeFrame && (empty($timeDimension['start']) || empty($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
-                'Missing configuration parameters "export.timeDimension.start/end" for timeFrame="%s".',
+                'Missing configuration parameters "parameters.export.timeDimension.start/end" for timeFrame="%s".',
                 $timeFrame
             ));
         }
 
         // Not custom timeFrame, but start or end is set
-        if (!$customTimeFrame && (isset($timeDimension['start']) || isset($timeDimension['end']))) {
+        if (!$customTimeFrame && (!empty($timeDimension['start']) || !empty($timeDimension['end']))) {
             throw new InvalidConfigurationException(sprintf(
-                'Configuration parameters "export.timeDimension.start/end" are not compatible with timeFrame="%s".',
-                $timeFrame
+                'Configuration parameters "parameters.export.timeDimension.start/end" ' .
+                'are not compatible with timeFrame="%s", please use timeFrame="%s".',
+                $timeFrame,
+                ConfigDefinition::TIME_FRAME_CUSTOM
             ));
+        }
+
+        foreach (['start', 'end'] as $key) {
+            if (!empty($timeDimension[$key]) and !preg_match('~^\d{4}-\d{2}-\d{2}$~', $timeDimension[$key])) {
+                throw new InvalidConfigurationException(sprintf(
+                    'Invalid date "%s" in "parameters.export.timeDimension.%s", please use "YYYY-MM-DD" format.',
+                    $timeDimension[$key],
+                    $key
+                ));
+            }
         }
 
         return $parameters;

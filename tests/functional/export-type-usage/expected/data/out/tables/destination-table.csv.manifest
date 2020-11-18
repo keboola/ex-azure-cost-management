@@ -1,0 +1,13 @@
+{
+    "primary_key": [
+        "ServiceName",
+        "Meter"
+    ],
+    "columns": [
+        "ServiceName",
+        "Meter",
+        "UsageQuantity",
+        "Currency"
+    ],
+    "incremental": true
+}

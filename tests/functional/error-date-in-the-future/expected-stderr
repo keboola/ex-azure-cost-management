@@ -1,0 +1,1 @@
+Export "destination-table" failed: http_code="400", error_code="BadRequest", message="Invalid query definition: The From date: %a is future date.%A

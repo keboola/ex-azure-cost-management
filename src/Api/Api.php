@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Api;
 
+use Generator;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
 use Keboola\AzureCostExtractor\Config;
 use Throwable;
 use Psr\Http\Message\ResponseInterface;
@@ -23,23 +25,50 @@ class Api
 {
     private LoggerInterface $logger;
 
-    private Client $client;
-
     private Config $config;
 
-    public function __construct(LoggerInterface $logger, Client $client, Config $config)
+    private Client $client;
+
+    public function __construct(LoggerInterface $logger, Config $config, Client $client)
     {
         $this->logger = $logger;
-        $this->client = $client;
         $this->config = $config;
+        $this->client = $client;
     }
 
-    public function send(Request $request): ResponseInterface
+    /**
+     * Send request and load next pages, if "nextLink" is present in the response.
+     * Returns decoded JSON body
+     * @param Request $request
+     * @return Generator|array[]
+     */
+    public function send(Request $request): Generator
+    {
+        $page = 1;
+        while (true) {
+            // Send request
+            $response = $this->sendOneRequest($request);
+            $body = JsonHelper::decode($response->getBody()->getContents());
+            yield $body;
+
+            // Load next page
+            $nextLink = $body['properties']['nextLink'] ?? null;
+            if ($nextLink) {
+                $page++;
+                $request = $request->withUri(new Uri($nextLink));
+                $this->logger->info(sprintf('Loading the next results, page %s.', $page));
+            } else {
+                break;
+            }
+        }
+    }
+
+    public function sendOneRequest(Request $request): ResponseInterface
     {
         try {
             /** @var ResponseInterface $response */
             $response = $this->createRetryProxy()->call(function () use ($request) {
-                return $this->doSend($request);
+                return $this->doSendOneRequest($request);
             });
             return $response;
         } catch (ExportRequestException $e) {
@@ -47,7 +76,7 @@ class Api
         }
     }
 
-    private function doSend(Request $request): ResponseInterface
+    private function doSendOneRequest(Request $request): ResponseInterface
     {
         try {
             return $this->client->send($request);
@@ -69,7 +98,7 @@ class Api
         // Format full exception message
         $msg = sprintf(
             'Export "%s" failed: http_code="%d", %s, request_body="%s", uri="%s"',
-            $this->config->getConfigRowName(),
+            $this->config->getDestination(),
             $exception->getCode(),
             $error,
             $requestBody->getContents(),
@@ -114,8 +143,8 @@ class Api
     private function isUserException(ExportRequestException $e): bool
     {
         return
-            // Unauthorized 401, Forbidden 403, Not Found 404, Conflict 409
-            in_array($e->getCode(), [401, 403, 404, 409], true) ||
+            // Bad Request 400 (eg. bad date), Unauthorized 401, Forbidden 403, Not Found 404, Conflict 409
+            in_array($e->getCode(), [400, 401, 403, 404, 409], true) ||
             // Server error 5xx
             ($e->getCode() >= 500 && $e->getCode() < 600);
     }
