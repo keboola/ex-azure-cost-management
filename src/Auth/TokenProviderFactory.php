@@ -27,7 +27,7 @@ class TokenProviderFactory
     {
         // Service principal login
         if ($this->config->hasServicePrincipal()) {
-            $this->logger->info('Login using Service Principal.');
+            $this->logger->info('Using Service Principal authentication.');
             return new ServicePrincipalTokenProvider(
                 $this->config->getServicePrincipalTenant(),
                 $this->config->getServicePrincipalUsername(),
@@ -36,7 +36,7 @@ class TokenProviderFactory
         }
 
         // OAuth Refresh Token login
-        $this->logger->info('Login using OAuth Refresh Token.');
+        $this->logger->info('Using OAuth Refresh Token authentication.');
         $tokenDataManager = new TokenDataManager($this->config->getOAuthApiData(), $this->stateObject);
         return new RefreshTokenProvider(
             $this->config->getOAuthApiAppKey(),
