@@ -33,17 +33,31 @@ class RefreshTokenProvider implements TokenProvider
     public function get(): AccessTokenInterface
     {
         $provider = $this->createOAuthProvider($this->appId, $this->appSecret);
+        $tokens = $this->dataManager->load();
 
         // It is needed to always refresh token, because original token expires after 1 hour
-        try {
-            $token = new AccessToken($this->dataManager->load());
-            $newToken = $provider->getAccessToken('refresh_token', ['refresh_token' => $token->getRefreshToken()]);
-        } catch (IdentityProviderException $e) {
+        $newToken = null;
+        $exception = null;
+
+        // Try token from stored state, and from the configuration.
+        foreach ($tokens as $token) {
+            try {
+                $newToken = $provider->getAccessToken(
+                    'refresh_token',
+                    ['refresh_token' => $token->getRefreshToken()]
+                );
+                break;
+            } catch (IdentityProviderException $exception) {
+                // try next token
+            }
+        }
+
+        if (!$newToken) {
             throw new AccessTokenRefreshException(
                 'Microsoft OAuth API token refresh failed, ' .
                 'please reset authorization in the extractor configuration.',
                 0,
-                $e
+                $exception
             );
         }
 

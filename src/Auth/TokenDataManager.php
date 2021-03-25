@@ -6,6 +6,7 @@ namespace Keboola\AzureCostExtractor\Auth;
 
 use ArrayObject;
 use Keboola\Component\JsonHelper;
+use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Keboola\AzureCostExtractor\Exception\AccessTokenInitException;
 
@@ -31,16 +32,16 @@ class TokenDataManager
         }
     }
 
-    public function load(): array
+    public function load(): iterable
     {
         // Load tokens from state.json
         $authDataJson = $this->state[self::STATE_AUTH_DATA_KEY] ?? null;
         if (is_string($authDataJson)) {
-            return JsonHelper::decode($authDataJson);
+            yield new AccessToken(JsonHelper::decode($authDataJson));
         }
 
         // Or use default from the configuration
-        return $this->configAuthData;
+        yield new AccessToken($this->configAuthData);
     }
 
     public function store(AccessTokenInterface $newToken): void
