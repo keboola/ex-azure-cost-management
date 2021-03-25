@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Auth;
 
+use Keboola\AzureCostExtractor\Exception\AccessTokenInitException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Token\AccessTokenInterface;
@@ -34,7 +35,11 @@ class ServicePrincipalTokenProvider implements TokenProvider
         try {
             $newToken = $provider->getAccessToken('client_credentials', ['scope' => self::SCOPE]);
         } catch (IdentityProviderException $e) {
-            throw $e;
+            throw new AccessTokenInitException(
+                'Service Principal OAuth login failed: ' . $e->getMessage(),
+                0,
+                $e
+            );
         }
 
         return $newToken;

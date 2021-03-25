@@ -9,7 +9,17 @@ before_script:
   - export APP_IMAGE=keboola-component
   - docker -v
   - docker build -t $APP_IMAGE .
-  - docker run -e OAUTH_APP_NAME -e OAUTH_APP_ID -e OAUTH_APP_SECRET -e OAUTH_ACCESS_TOKEN -e OAUTH_REFRESH_TOKEN -e TEST_SUBSCRIPTION_ID $APP_IMAGE composer ci
+  - docker run
+    -e OAUTH_APP_NAME
+    -e OAUTH_APP_ID
+    -e OAUTH_APP_SECRET
+    -e OAUTH_ACCESS_TOKEN
+    -e OAUTH_REFRESH_TOKEN
+    -e SERVICE_PRINCIPAL_TENANT
+    -e SERVICE_PRINCIPAL_USERNAME
+    -e SERVICE_PRINCIPAL_PASSWORD
+    -e TEST_SUBSCRIPTION_ID
+    $APP_IMAGE composer ci
 
   # push test image to ECR
   - docker pull quay.io/keboola/developer-portal-cli-v2:latest
