@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor\Tests;
 
 use ArrayObject;
+use Keboola\AzureCostExtractor\Auth\TokenDataManager;
 use Keboola\AzureCostExtractor\Exception\AccessTokenRefreshException;
-use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
 use Keboola\Component\JsonHelper;
 use PHPUnit\Framework\Assert;
 
@@ -20,7 +20,7 @@ class OAuthTest extends BaseTest
         $originRefreshToken = (string) getenv('OAUTH_REFRESH_TOKEN');
 
         // Refresh tokens
-        $tokenProvider = $this->createTokenProvider();
+        $tokenProvider = $this->createRefreshTokenProvider();
         $newAccessToken = $tokenProvider->get();
 
         // We have a new access token
@@ -40,7 +40,7 @@ class OAuthTest extends BaseTest
 
     public function testEmptyStateInvalidTokens(): void
     {
-        $tokenProvider = $this->createTokenProvider([
+        $tokenProvider = $this->createRefreshTokenProvider([
             'access_token' => 'invalid',
             'refresh_token' => 'invalid',
         ]);
@@ -65,7 +65,7 @@ class OAuthTest extends BaseTest
         ]);
 
         // And configuration contains expired old tokens, but they are not used
-        $tokenProvider = $this->createTokenProvider([
+        $tokenProvider = $this->createRefreshTokenProvider([
             'access_token' => 'old',
             'refresh_token' => 'old',
         ]);
@@ -95,7 +95,7 @@ class OAuthTest extends BaseTest
                 'refresh_token' => 'invalid',
             ]),
         ]);
-        $tokenProvider = $this->createTokenProvider([
+        $tokenProvider = $this->createRefreshTokenProvider([
             'access_token' => 'invalid',
             'refresh_token' => 'invalid',
         ]);
@@ -105,5 +105,14 @@ class OAuthTest extends BaseTest
             'Microsoft OAuth API token refresh failed, please reset authorization in the extractor configuration.'
         );
         $tokenProvider->get();
+    }
+
+    public function testServicePrincipalCredentials(): void
+    {
+        $tokenProvider = $this->createServicePrincipalTokenProvider();
+        $newAccessToken = $tokenProvider->get();
+
+        // We have a access token
+        Assert::assertNotEmpty($newAccessToken->getToken());
     }
 }

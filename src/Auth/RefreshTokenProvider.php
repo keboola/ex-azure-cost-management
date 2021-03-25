@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\AzureCostExtractor\OAuth;
+namespace Keboola\AzureCostExtractor\Auth;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -10,7 +10,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Keboola\AzureCostExtractor\Exception\AccessTokenRefreshException;
 
-class TokenProvider
+class RefreshTokenProvider implements TokenProvider
 {
     private const AUTHORITY_URL = 'https://login.microsoftonline.com/common';
     private const AUTHORIZE_ENDPOINT = '/oauth2/v2.0/authorize';
@@ -56,7 +56,6 @@ class TokenProvider
         return new GenericProvider([
             'clientId' => $appId,
             'clientSecret' => $appSecret,
-            'redirectUri' => '',
             'urlAuthorize' => self::AUTHORITY_URL . self::AUTHORIZE_ENDPOINT,
             'urlAccessToken' => self::AUTHORITY_URL . self::TOKEN_ENDPOINT,
             'urlResourceOwnerDetails' => '',

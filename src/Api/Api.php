@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor\Api;
 
 use Generator;
+use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use Keboola\AzureCostExtractor\Config;
 use Throwable;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
@@ -27,13 +27,16 @@ class Api
 
     private Config $config;
 
+    private ClientFactory $clientFactory;
+
     private Client $client;
 
-    public function __construct(LoggerInterface $logger, Config $config, Client $client)
+    public function __construct(LoggerInterface $logger, Config $config, ClientFactory $clientFactory)
     {
         $this->logger = $logger;
         $this->config = $config;
-        $this->client = $client;
+        $this->clientFactory = $clientFactory;
+        $this->login();
     }
 
     /**
@@ -105,6 +108,17 @@ class Api
             $exception->getRequest()->getUri()
         );
 
+        // In case of error 401 try to log in again, the token maybe expired
+        if ($exception->getCode() === 401) {
+            $this->logger->info('Unauthorized, trying to log in again.');
+
+            // Failed login throw a user error
+            $this->login();
+
+            // If login passed -> retry
+            return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
+        }
+
         if ($this->isRetryException($exception)) {
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
@@ -169,5 +183,11 @@ class Api
             $backOffPolicy,
             $this->logger,
         );
+    }
+
+    private function login(): void
+    {
+        // (Re)Create client -> enforcing a new authorization
+        $this->client = $this->clientFactory->create();
     }
 }

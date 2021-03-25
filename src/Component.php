@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Keboola\AzureCostExtractor;
 
 use ArrayObject;
+use Keboola\AzureCostExtractor\Auth\TokenProviderFactory;
 use Keboola\AzureCostExtractor\Csv\ResponseWriterFactory;
 use Psr\Log\LoggerInterface;
 use Keboola\AzureCostExtractor\Api\ApiFactory;
 use Keboola\AzureCostExtractor\Api\ClientFactory;
 use Keboola\AzureCostExtractor\Api\RequestFactory;
-use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
-use Keboola\AzureCostExtractor\OAuth\TokenProvider;
 use Keboola\Component\BaseComponent;
 
 class Component extends BaseComponent
@@ -28,14 +27,10 @@ class Component extends BaseComponent
         $config = $this->getConfig();
 
         $this->stateObject = new ArrayObject($this->getInputState());
-        $tokenDataManager = new TokenDataManager($config->getOAuthApiData(), $this->stateObject);
-        $tokenProvider = new TokenProvider(
-            $config->getOAuthApiAppKey(),
-            $config->getOAuthApiAppSecret(),
-            $tokenDataManager
-        );
+        $tokenProviderFactory = new TokenProviderFactory($config, $logger, $this->stateObject);
+        $tokenProvider = $tokenProviderFactory->create();
         $clientFactory = new ClientFactory($tokenProvider, $config->getSubscriptionId());
-        $apiFactory = new ApiFactory($logger, $config, $clientFactory->create());
+        $apiFactory = new ApiFactory($logger, $config, $clientFactory);
         $requestFactory = new RequestFactory($config);
         $responseWriterFactory = new ResponseWriterFactory($this->getManifestManager(), $config, $this->getDataDir());
         $this->extractor = new Extractor(

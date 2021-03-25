@@ -1,0 +1,16 @@
+{
+  "parameters": {
+    "subscriptionId": "%env(string:TEST_SUBSCRIPTION_ID)%",
+    "servicePrincipal": {
+      "tenant": "%env(string:SERVICE_PRINCIPAL_TENANT)%",
+      "username": "%env(string:SERVICE_PRINCIPAL_USERNAME)%",
+      "password": "%env(string:SERVICE_PRINCIPAL_PASSWORD)%"
+    },
+    "export": {
+      "destination": "destination-table",
+      "groupingDimensions": [
+        "ServiceName"
+      ]
+    }
+  }
+}

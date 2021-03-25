@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\AzureCostExtractor\OAuth;
+namespace Keboola\AzureCostExtractor\Auth;
 
 use ArrayObject;
 use Keboola\Component\JsonHelper;
