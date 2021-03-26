@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\AzureCostExtractor\OAuth;
+namespace Keboola\AzureCostExtractor\Auth;
 
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -10,7 +10,7 @@ use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Keboola\AzureCostExtractor\Exception\AccessTokenRefreshException;
 
-class TokenProvider
+class RefreshTokenProvider implements TokenProvider
 {
     private const AUTHORITY_URL = 'https://login.microsoftonline.com/common';
     private const AUTHORIZE_ENDPOINT = '/oauth2/v2.0/authorize';
@@ -33,17 +33,31 @@ class TokenProvider
     public function get(): AccessTokenInterface
     {
         $provider = $this->createOAuthProvider($this->appId, $this->appSecret);
+        $tokens = $this->dataManager->load();
 
         // It is needed to always refresh token, because original token expires after 1 hour
-        try {
-            $token = new AccessToken($this->dataManager->load());
-            $newToken = $provider->getAccessToken('refresh_token', ['refresh_token' => $token->getRefreshToken()]);
-        } catch (IdentityProviderException $e) {
+        $newToken = null;
+        $exception = null;
+
+        // Try token from stored state, and from the configuration.
+        foreach ($tokens as $token) {
+            try {
+                $newToken = $provider->getAccessToken(
+                    'refresh_token',
+                    ['refresh_token' => $token->getRefreshToken()]
+                );
+                break;
+            } catch (IdentityProviderException $exception) {
+                // try next token
+            }
+        }
+
+        if (!$newToken) {
             throw new AccessTokenRefreshException(
                 'Microsoft OAuth API token refresh failed, ' .
                 'please reset authorization in the extractor configuration.',
                 0,
-                $e
+                $exception
             );
         }
 
@@ -56,7 +70,6 @@ class TokenProvider
         return new GenericProvider([
             'clientId' => $appId,
             'clientSecret' => $appSecret,
-            'redirectUri' => '',
             'urlAuthorize' => self::AUTHORITY_URL . self::AUTHORIZE_ENDPOINT,
             'urlAccessToken' => self::AUTHORITY_URL . self::TOKEN_ENDPOINT,
             'urlResourceOwnerDetails' => '',

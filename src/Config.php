@@ -65,6 +65,26 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'export', 'groupingDimensions']);
     }
 
+    public function hasServicePrincipal(): bool
+    {
+        return !empty($this->getValue(['parameters', 'servicePrincipal'], []));
+    }
+
+    public function getServicePrincipalTenant(): string
+    {
+        return $this->getValue(['parameters', 'servicePrincipal', 'tenant']);
+    }
+
+    public function getServicePrincipalUsername(): string
+    {
+        return $this->getValue(['parameters', 'servicePrincipal', 'username']);
+    }
+
+    public function getServicePrincipalPassword(): string
+    {
+        return $this->getValue(['parameters', 'servicePrincipal', 'password']);
+    }
+
     public function getOAuthApiData(): array
     {
         $data = parent::getOAuthApiData();

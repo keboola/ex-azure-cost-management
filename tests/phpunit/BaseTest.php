@@ -7,8 +7,10 @@ namespace Keboola\AzureCostExtractor\Tests;
 use ArrayObject;
 use GuzzleHttp\Client;
 use Keboola\AzureCostExtractor\Api\ClientFactory;
-use Keboola\AzureCostExtractor\OAuth\TokenDataManager;
-use Keboola\AzureCostExtractor\OAuth\TokenProvider;
+use Keboola\AzureCostExtractor\Auth\RefreshTokenProvider;
+use Keboola\AzureCostExtractor\Auth\ServicePrincipalTokenProvider;
+use Keboola\AzureCostExtractor\Auth\TokenDataManager;
+use Keboola\AzureCostExtractor\Auth\TokenProvider;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseTest extends TestCase
@@ -24,11 +26,11 @@ abstract class BaseTest extends TestCase
     protected function createClient(): Client
     {
         $subscriptionId = (string) getenv('TEST_SUBSCRIPTION_ID');
-        $factory = new ClientFactory($this->createTokenProvider(), $subscriptionId);
+        $factory = new ClientFactory($this->createRefreshTokenProvider(), $subscriptionId);
         return $factory->create();
     }
 
-    protected function createTokenProvider(?array $oauthData = null): TokenProvider
+    protected function createRefreshTokenProvider(?array $oauthData = null): TokenProvider
     {
         $appId = (string) getenv('OAUTH_APP_ID');
         $appSecret = (string) getenv('OAUTH_APP_SECRET');
@@ -39,6 +41,14 @@ abstract class BaseTest extends TestCase
             'refresh_token' => $refreshToken,
         ];
         $dataManager = new TokenDataManager($oauthData, $this->state);
-        return new TokenProvider($appId, $appSecret, $dataManager);
+        return new RefreshTokenProvider($appId, $appSecret, $dataManager);
+    }
+
+    protected function createServicePrincipalTokenProvider(): TokenProvider
+    {
+        $tenant = (string) getenv('SERVICE_PRINCIPAL_TENANT');
+        $username = (string) getenv('SERVICE_PRINCIPAL_USERNAME');
+        $password = (string) getenv('SERVICE_PRINCIPAL_PASSWORD');
+        return new ServicePrincipalTokenProvider($tenant, $username, $password);
     }
 }
