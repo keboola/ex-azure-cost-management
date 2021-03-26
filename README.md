@@ -16,7 +16,7 @@ The configuration `config.json` contains following properties in `parameters` ke
 - `servicePrincipal` - optional (array), filled in only if "classic" OAuth authorization is not used
     - `tenant` - string (required): Tenant of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
     - `username` - string (required): Username of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
-    - `password` - string (required): Password of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
+    - `#password` - string (required): Password of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
 - `maxTries` - integer (optional): Number of the max tries if an error occurred. Default `5`.
 - `export` - object (required): Configuration of the export.
     - `destination` - string (required): Name of the target table in the bucket.
