@@ -4,7 +4,7 @@
     "servicePrincipal": {
       "tenant": "%env(string:SERVICE_PRINCIPAL_TENANT)%",
       "username": "%env(string:SERVICE_PRINCIPAL_USERNAME)%",
-      "password": "bad"
+      "#password": "bad"
     },
     "export": {
       "destination": "destination-table",

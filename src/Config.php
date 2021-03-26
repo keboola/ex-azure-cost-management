@@ -82,7 +82,7 @@ class Config extends BaseConfig
 
     public function getServicePrincipalPassword(): string
     {
-        return $this->getValue(['parameters', 'servicePrincipal', 'password']);
+        return $this->getValue(['parameters', 'servicePrincipal', '#password']);
     }
 
     public function getOAuthApiData(): array

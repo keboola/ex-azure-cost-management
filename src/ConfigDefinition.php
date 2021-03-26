@@ -80,7 +80,7 @@ class ConfigDefinition extends BaseConfigDefinition
                             ->isRequired()
                             ->cannotBeEmpty()
                         ->end()
-                        ->scalarNode('password')
+                        ->scalarNode('#password')
                             ->isRequired()
                             ->cannotBeEmpty()
                         ->end()
