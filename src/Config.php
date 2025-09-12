@@ -85,6 +85,12 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'servicePrincipal', '#password']);
     }
 
+
+    public function getAuthUr(): string
+    {
+        return $this->getValue(['image_parameters', 'auth_url_override'], 'https://login.microsoftonline.com/common');
+    }
+
     public function getOAuthApiData(): array
     {
         $data = parent::getOAuthApiData();

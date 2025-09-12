@@ -41,7 +41,8 @@ class TokenProviderFactory
         return new RefreshTokenProvider(
             $this->config->getOAuthApiAppKey(),
             $this->config->getOAuthApiAppSecret(),
-            $tokenDataManager
+            $tokenDataManager,
+            $this->config->getAuthUrlOverride()
         );
     }
 }
