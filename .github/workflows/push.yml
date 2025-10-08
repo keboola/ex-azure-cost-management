@@ -88,20 +88,42 @@ jobs:
                     -e TEST_SUBSCRIPTION_ID="${{ secrets.TEST_SUBSCRIPTION_ID }}" \
                     ${{env.APP_IMAGE}} composer tests-phpunit
             -
-                name: 'Run functional tests'
+                name: 'Run functional tests with rate limiting delays'
                 run: |
-                    docker run \
-                    -e KBC_DATA_TYPE_SUPPORT \
-                    -e OAUTH_APP_NAME="${{ secrets.OAUTH_APP_NAME }}" \
-                    -e OAUTH_APP_ID="${{ secrets.OAUTH_APP_ID }}" \
-                    -e OAUTH_APP_SECRET="${{ secrets.OAUTH_APP_SECRET }}" \
-                    -e OAUTH_ACCESS_TOKEN="${{ secrets.OAUTH_ACCESS_TOKEN }}" \
-                    -e OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}" \
-                    -e SERVICE_PRINCIPAL_TENANT="${{ secrets.SERVICE_PRINCIPAL_TENANT }}" \
-                    -e SERVICE_PRINCIPAL_USERNAME="${{ secrets.SERVICE_PRINCIPAL_USERNAME }}" \
-                    -e SERVICE_PRINCIPAL_PASSWORD="${{ secrets.SERVICE_PRINCIPAL_PASSWORD }}" \
-                    -e TEST_SUBSCRIPTION_ID="${{ secrets.TEST_SUBSCRIPTION_ID }}" \
-                    ${{env.APP_IMAGE}} composer tests
+                    # Get list of test directories
+                    TEST_DIRS=$(find tests/functional -maxdepth 1 -mindepth 1 -type d -exec basename {} \; | sort)
+                    
+                    PAUSE_SECONDS=15
+                    FAILED_TESTS=()
+                    
+                    echo "Running functional tests sequentially with ${PAUSE_SECONDS}s pause between tests..."
+                    
+                    for test_dir in $TEST_DIRS; do
+                      echo "=== Running test: ${test_dir} ==="
+                      
+                      docker run --rm \
+                        -e KBC_DATA_TYPE_SUPPORT \
+                        -e OAUTH_APP_NAME="${{ secrets.OAUTH_APP_NAME }}" \
+                        -e OAUTH_APP_ID="${{ secrets.OAUTH_APP_ID }}" \
+                        -e OAUTH_APP_SECRET="${{ secrets.OAUTH_APP_SECRET }}" \
+                        -e OAUTH_ACCESS_TOKEN="${{ secrets.OAUTH_ACCESS_TOKEN }}" \
+                        -e OAUTH_REFRESH_TOKEN="${{ secrets.OAUTH_REFRESH_TOKEN }}" \
+                        -e SERVICE_PRINCIPAL_TENANT="${{ secrets.SERVICE_PRINCIPAL_TENANT }}" \
+                        -e SERVICE_PRINCIPAL_USERNAME="${{ secrets.SERVICE_PRINCIPAL_USERNAME }}" \
+                        -e SERVICE_PRINCIPAL_PASSWORD="${{ secrets.SERVICE_PRINCIPAL_PASSWORD }}" \
+                        -e TEST_SUBSCRIPTION_ID="${{ secrets.TEST_SUBSCRIPTION_ID }}" \
+                        ${{env.APP_IMAGE}} vendor/bin/phpunit tests/functional --filter="${test_dir}" || FAILED_TESTS+=("${test_dir}")
+                      
+                      echo "=== Completed: ${test_dir}. Sleeping ${PAUSE_SECONDS}s to avoid rate limiting... ==="
+                      sleep ${PAUSE_SECONDS}
+                    done
+                    
+                    if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
+                      echo "Failed tests: ${FAILED_TESTS[@]}"
+                      exit 1
+                    fi
+                    
+                    echo "All functional tests passed!"
 
     deploy:
         needs:
