@@ -62,11 +62,11 @@ class RefreshTokenProvider implements TokenProvider
         if (!$newToken) {
             $errorMessage = 'Microsoft OAuth API token refresh failed, ' .
                 'please reset authorization in the extractor configuration.';
-            
+
             if ($exception) {
                 $errorMessage .= ' Error details: ' . $exception->getMessage();
             }
-            
+
             throw new AccessTokenRefreshException(
                 $errorMessage,
                 0,
