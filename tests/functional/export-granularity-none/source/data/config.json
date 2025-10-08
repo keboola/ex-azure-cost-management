@@ -15,8 +15,8 @@
       "granularity": "None",
       "timeDimension": {
         "timeFrame": "Custom",
-        "start": "2020-02-01",
-        "end": "2020-03-31"
+        "start": "2025-08-01",
+        "end": "2025-08-31"
       },
       "groupingDimensions": [
         "ServiceName",
