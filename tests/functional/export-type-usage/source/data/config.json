@@ -16,7 +16,7 @@
       "aggregation": "UsageQuantity",
       "granularity": "None",
       "timeDimension": {
-        "timeFrame": "TheLastMonth"
+        "timeFrame": "TheLastBillingMonth"
       },
       "groupingDimensions": [
         "ServiceName",
