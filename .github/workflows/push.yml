@@ -7,6 +7,7 @@ env:
     APP_IMAGE: keboola/ex-azure-cost-management
     KBC_DEVELOPERPORTAL_VENDOR: keboola
     KBC_DEVELOPERPORTAL_APP: keboola.ex-azure-cost-management
+    KBC_DEVELOPERPORTAL_APP_SERVICE_PRINCIPAL: keboola.ex-azure-cost-management-sp
     KBC_DEVELOPERPORTAL_USERNAME: ${{ vars.KBC_DEVELOPERPORTAL_USERNAME }}
     KBC_DEVELOPERPORTAL_PASSWORD: '${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}'
     KBC_DATA_TYPE_SUPPORT: "none"
@@ -141,4 +142,13 @@ jobs:
                     username: '${{ env.KBC_DEVELOPERPORTAL_USERNAME }}'
                     password: '${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}'
                     tag: '${{ needs.build.outputs.app_image_tag }}'
+            -
+              name: 'Set tag in the Developer Portal (service principal)'
+              uses: keboola/action-set-tag-developer-portal@master
+              with:
+                  vendor: '${{ env.KBC_DEVELOPERPORTAL_VENDOR }}'
+                  app_id: '${{ env.KBC_DEVELOPERPORTAL_APP_SERVICE_PRINCIPAL }}'
+                  username: '${{ env.KBC_DEVELOPERPORTAL_USERNAME }}'
+                  password: '${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}'
+                  tag: '${{ needs.build.outputs.app_image_tag }}'
 
