@@ -1,1 +1,1 @@
-Export "destination-table" failed: http_code="400", error_code="BadRequest", message="Invalid query definition: The From date: %a is future date.%A
+Export "destination-table" failed: http_code="400", error_code="BadRequest", message="Invalid query definition: The selected date range starting from %a is invalid because it is in the future. Cost analysis will only display charges for dates up to the current date and time. Please choose a valid date range to proceed.  (Request ID: %a)"%A
