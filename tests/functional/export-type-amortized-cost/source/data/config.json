@@ -16,7 +16,7 @@
       "aggregation": "CostUSD",
       "granularity": "Daily",
       "timeDimension": {
-        "timeFrame": "TheLastBillingMonth"
+        "timeFrame": "TheLastMonth"
       },
       "groupingDimensions": [
         "ServiceName",
