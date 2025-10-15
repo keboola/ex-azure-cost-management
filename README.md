@@ -113,32 +113,7 @@ Run the test suite using this command:
 ```
 docker-compose run --rm dev composer tests
 ```
- 
-### Functional tests (sequential runner)
-
-Functional (datadir) tests can be executed sequentially with pauses and retries to avoid Azure API rate limiting (HTTP 429):
-
-```
-docker-compose run --rm dev bash -lc "utils/run-functional-tests.sh"
-```
-
-Environment variables (tunables):
-- `FT_PAUSE_SECONDS` (default `10`): Pause between datasets.
-- `FT_RETRIES` (default `2`): Retries per dataset on failure.
-- `FT_BACKOFF_SECONDS` (default `20`): Pause between retries of the same dataset.
-- `FT_DEBUG` (`1` to enable): Verbose bash tracing.
-- `FT_DATASETS`: Comma/space separated subset of dataset basenames to run.
-- `FT_FAIL_ON_ERROR` (default `true`): Set to `false` to continue even if some datasets fail.
-
-Auth environment:
-- If `OAUTH_DATA` is not set, the runner auto-constructs it from `OAUTH_ACCESS_TOKEN` and `OAUTH_REFRESH_TOKEN`.
-
-Example with increased pauses:
-
-```
-docker-compose run --rm dev bash -lc "FT_PAUSE_SECONDS=20 FT_RETRIES=2 FT_BACKOFF_SECONDS=30 utils/run-functional-tests.sh"
-```
 
 # Integration
 
-For information about deployment and integration with KBC, please refer to the [deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/) 
+For information about deployment and integration with KBC, please refer to the [deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/)  
