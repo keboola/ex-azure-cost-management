@@ -31,17 +31,19 @@ class TokenProviderFactory
             return new ServicePrincipalTokenProvider(
                 $this->config->getServicePrincipalTenant(),
                 $this->config->getServicePrincipalUsername(),
-                $this->config->getServicePrincipalPassword(),
+                $this->config->getServicePrincipalPassword()
             );
         }
 
         // OAuth Refresh Token login
         $this->logger->info('Using OAuth Refresh Token authentication.');
         $tokenDataManager = new TokenDataManager($this->config->getOAuthApiData(), $this->stateObject);
+        $authorityUrl = $this->config->getOAuthAuthorityUrl();
         return new RefreshTokenProvider(
             $this->config->getOAuthApiAppKey(),
             $this->config->getOAuthApiAppSecret(),
-            $tokenDataManager
+            $tokenDataManager,
+            $authorityUrl
         );
     }
 }

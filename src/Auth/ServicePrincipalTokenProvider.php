@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\AzureCostExtractor\Auth;
 
+use Keboola\AzureCostExtractor\Config;
 use Keboola\AzureCostExtractor\Exception\AccessTokenInitException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
@@ -11,7 +12,6 @@ use League\OAuth2\Client\Token\AccessTokenInterface;
 
 class ServicePrincipalTokenProvider implements TokenProvider
 {
-    private const AUTHORITY_URL = 'https://login.microsoftonline.com/%s';
     private const TOKEN_ENDPOINT = '/oauth2/v2.0/token';
     private const SCOPE = 'https://management.core.windows.net/.default';
 
@@ -51,7 +51,7 @@ class ServicePrincipalTokenProvider implements TokenProvider
             'clientId' => $this->username,
             'clientSecret' => $this->password,
             'urlAuthorize' => '',
-            'urlAccessToken' => sprintf(self::AUTHORITY_URL, $this->tenantId) . self::TOKEN_ENDPOINT,
+            'urlAccessToken' => sprintf('%s/%s', Config::OAUTH_BASE_URL, $this->tenantId) . self::TOKEN_ENDPOINT,
             'urlResourceOwnerDetails' => '',
         ]);
     }

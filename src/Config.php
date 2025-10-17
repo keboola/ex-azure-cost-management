@@ -10,6 +10,8 @@ use Keboola\Component\JsonHelper;
 
 class Config extends BaseConfig
 {
+    public const OAUTH_BASE_URL = 'https://login.microsoftonline.com';
+
     public function getMaxTries(): int
     {
         return (int) $this->getValue(['parameters', 'maxTries']);
@@ -23,6 +25,12 @@ class Config extends BaseConfig
     public function getSubscriptionId(): string
     {
         return $this->getValue(['parameters', 'subscriptionId']);
+    }
+
+    public function getTenantIdOrNull(): ?string
+    {
+        $tenantId = $this->getValue(['parameters', 'tenantId'], null);
+        return $tenantId !== null && $tenantId !== '' ? (string) $tenantId : null;
     }
 
     public function getType(): string
@@ -105,5 +113,17 @@ class Config extends BaseConfig
                 substr($data, 0, 16)
             ));
         }
+    }
+
+    public function getOAuthAuthorityUrl(): string
+    {
+        $tenantId = $this->getTenantIdOrNull();
+        $tenant = $tenantId !== null ? $tenantId : 'common';
+        return sprintf('%s/%s', self::OAUTH_BASE_URL, $tenant);
+    }
+
+    public function getServicePrincipalAuthorityUrl(): string
+    {
+        return sprintf('%s/%s', self::OAUTH_BASE_URL, $this->getServicePrincipalTenant());
     }
 }

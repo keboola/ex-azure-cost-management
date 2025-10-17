@@ -11,6 +11,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class ConfigDefinition extends BaseConfigDefinition
 {
     public const DEFAULT_MAX_TRIES = 5;
+    public const DEFAULT_AUTH_BASE_URL = 'https://login.microsoftonline.com';
     public const TIME_FRAME_CUSTOM = 'Custom';
     public const TYPE_VALUES = [
         'ActualCost',
@@ -69,6 +70,7 @@ class ConfigDefinition extends BaseConfigDefinition
             ->isRequired()
             ->children()
                 ->scalarNode('subscriptionId')->isRequired()->cannotBeEmpty()->end()
+                ->scalarNode('tenantId')->defaultNull()->end()
                 ->integerNode('maxTries')->min(1)->defaultValue(self::DEFAULT_MAX_TRIES)->end()
                 ->arrayNode('servicePrincipal')
                     ->children()
