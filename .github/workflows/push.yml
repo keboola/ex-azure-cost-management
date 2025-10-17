@@ -147,6 +147,7 @@ jobs:
               uses: keboola/action-set-tag-developer-portal@master
               with:
                   vendor: '${{ env.KBC_DEVELOPERPORTAL_VENDOR }}'
+                  repository_app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
                   app_id: '${{ env.KBC_DEVELOPERPORTAL_APP_SERVICE_PRINCIPAL }}'
                   username: '${{ env.KBC_DEVELOPERPORTAL_USERNAME }}'
                   password: '${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}'
