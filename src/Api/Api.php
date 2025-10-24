@@ -16,6 +16,7 @@ use GuzzleHttp\Exception\RequestException;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
+use Keboola\AzureCostExtractor\Api\RateLimitBackOffPolicy;
 use Keboola\AzureCostExtractor\Exception\ExportRequestRetryException;
 use Keboola\AzureCostExtractor\Exception\ExportRequestException;
 use Keboola\Component\JsonHelper;
@@ -30,6 +31,8 @@ class Api
     private ClientFactory $clientFactory;
 
     private Client $client;
+
+    private ?RateLimitBackOffPolicy $rateLimitBackOffPolicy = null;
 
     public function __construct(LoggerInterface $logger, Config $config, ClientFactory $clientFactory)
     {
@@ -119,6 +122,12 @@ class Api
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
+        if ($exception->getCode() === 429) {
+            $this->handleRateLimitResponse($exception->getResponse());
+            $this->logger->info('Rate limit exceeded, will retry with backoff.');
+            return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
+        }
+
         if ($this->isRetryException($exception)) {
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
@@ -174,13 +183,32 @@ class Api
         return true;
     }
 
+    private function handleRateLimitResponse(?ResponseInterface $response): void
+    {
+        if ($response === null) {
+            return;
+        }
+
+        $retryAfter = $response->getHeader('Retry-After');
+        if (!empty($retryAfter) && is_numeric($retryAfter[0])) {
+            $retryAfterSeconds = (int) $retryAfter[0];
+            if ($this->rateLimitBackOffPolicy !== null) {
+                $this->rateLimitBackOffPolicy->setRetryAfterSeconds($retryAfterSeconds);
+                $this->logger->info(sprintf(
+                    'Azure API returned Retry-After: %d seconds',
+                    $retryAfterSeconds
+                ));
+            }
+        }
+    }
+
     private function createRetryProxy(): RetryProxy
     {
         $retryPolicy = new SimpleRetryPolicy($this->config->getMaxTries(), [ExportRequestRetryException::class]);
-        $backOffPolicy = new ExponentialBackOffPolicy();
+        $this->rateLimitBackOffPolicy = new RateLimitBackOffPolicy();
         return new RetryProxy(
             $retryPolicy,
-            $backOffPolicy,
+            $this->rateLimitBackOffPolicy,
             $this->logger,
         );
     }
