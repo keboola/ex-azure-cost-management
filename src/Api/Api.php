@@ -119,6 +119,11 @@ class Api
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
+        if ($exception->getCode() === 429) {
+            $this->logger->info('Rate limit exceeded (429), will retry with backoff.');
+            return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
+        }
+
         if ($this->isRetryException($exception)) {
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
@@ -177,7 +182,7 @@ class Api
     private function createRetryProxy(): RetryProxy
     {
         $retryPolicy = new SimpleRetryPolicy($this->config->getMaxTries(), [ExportRequestRetryException::class]);
-        $backOffPolicy = new ExponentialBackOffPolicy();
+        $backOffPolicy = new ExponentialBackOffPolicy(5000, 2.0, 120000);
         return new RetryProxy(
             $retryPolicy,
             $backOffPolicy,
