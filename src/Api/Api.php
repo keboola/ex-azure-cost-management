@@ -120,7 +120,11 @@ class Api
         }
 
         if ($exception->getCode() === 429) {
-            $this->logger->info('Rate limit exceeded (429), will retry with backoff.');
+            $rateLimitInfo = $this->formatRateLimitHeaders($exception->getResponse());
+            $this->logger->info(sprintf(
+                'Rate limit exceeded (429), will retry with backoff. %s',
+                $rateLimitInfo
+            ));
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
@@ -177,6 +181,26 @@ class Api
         }
 
         return true;
+    }
+
+    private function formatRateLimitHeaders(?ResponseInterface $response): string
+    {
+        if (!$response) {
+            return '';
+        }
+
+        $rateLimitHeaders = [];
+        foreach ($response->getHeaders() as $name => $values) {
+            if (stripos($name, 'x-ms-ratelimit') === 0) {
+                $rateLimitHeaders[] = sprintf('%s: %s', $name, implode(', ', $values));
+            }
+        }
+
+        if (empty($rateLimitHeaders)) {
+            return '';
+        }
+
+        return 'Rate limit headers: ' . implode('; ', $rateLimitHeaders);
     }
 
     private function createRetryProxy(): RetryProxy
