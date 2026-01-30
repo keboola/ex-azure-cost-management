@@ -121,10 +121,22 @@ class Api
 
         if ($exception->getCode() === 429) {
             $rateLimitInfo = $this->formatRateLimitHeaders($exception->getResponse());
-            $this->logger->info(sprintf(
-                'Rate limit exceeded (429), will retry with backoff. %s',
-                $rateLimitInfo
-            ));
+            $retryAfter = $this->extractRetryAfterSeconds($exception->getResponse());
+
+            if ($retryAfter !== null) {
+                $this->logger->info(sprintf(
+                    'Rate limit exceeded (429), waiting %d seconds before retry. %s',
+                    $retryAfter,
+                    $rateLimitInfo
+                ));
+                sleep($retryAfter);
+            } else {
+                $this->logger->info(sprintf(
+                    'Rate limit exceeded (429), will retry with backoff. %s',
+                    $rateLimitInfo
+                ));
+            }
+
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
@@ -201,6 +213,21 @@ class Api
         }
 
         return 'Rate limit headers: ' . implode('; ', $rateLimitHeaders);
+    }
+
+    private function extractRetryAfterSeconds(?ResponseInterface $response): ?int
+    {
+        if (!$response) {
+            return null;
+        }
+
+        // Check for the Azure Cost Management specific retry-after header
+        $header = $response->getHeader('x-ms-ratelimit-microsoft.costmanagement-entity-retry-after');
+        if (!empty($header)) {
+            return (int) $header[0];
+        }
+
+        return null;
     }
 
     private function createRetryProxy(): RetryProxy
