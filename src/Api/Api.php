@@ -81,10 +81,28 @@ class Api
 
     private function doSendOneRequest(Request $request): ResponseInterface
     {
-        try {
-            return $this->client->send($request);
-        } catch (RequestException $e) {
-            throw $this->processException($request, $e);
+        while (true) {
+            try {
+                return $this->client->send($request);
+            } catch (RequestException $e) {
+                // Handle 429 with Retry-After header specially - don't count against retry limit
+                if ($e->getCode() === 429) {
+                    $retryAfter = $this->extractRetryAfterSeconds($e->getResponse());
+                    if ($retryAfter !== null) {
+                        $rateLimitInfo = $this->formatRateLimitHeaders($e->getResponse());
+                        $this->logger->info(sprintf(
+                            'Rate limit exceeded (429), waiting %d seconds before retry. %s',
+                            $retryAfter,
+                            $rateLimitInfo
+                        ));
+                        sleep($retryAfter);
+                        continue; // Retry immediately without counting against maxTries
+                    }
+                }
+
+                // All other errors go through normal exception processing
+                throw $this->processException($request, $e);
+            }
         }
     }
 
@@ -120,23 +138,12 @@ class Api
         }
 
         if ($exception->getCode() === 429) {
+            // 429 without Retry-After header - use exponential backoff (counts against maxTries)
             $rateLimitInfo = $this->formatRateLimitHeaders($exception->getResponse());
-            $retryAfter = $this->extractRetryAfterSeconds($exception->getResponse());
-
-            if ($retryAfter !== null) {
-                $this->logger->info(sprintf(
-                    'Rate limit exceeded (429), waiting %d seconds before retry. %s',
-                    $retryAfter,
-                    $rateLimitInfo
-                ));
-                sleep($retryAfter);
-            } else {
-                $this->logger->info(sprintf(
-                    'Rate limit exceeded (429), will retry with backoff. %s',
-                    $rateLimitInfo
-                ));
-            }
-
+            $this->logger->info(sprintf(
+                'Rate limit exceeded (429) without Retry-After header, will retry with backoff. %s',
+                $rateLimitInfo
+            ));
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
