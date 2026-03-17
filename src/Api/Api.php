@@ -231,7 +231,7 @@ class Api
         // Check for the Azure Cost Management specific retry-after header
         $header = $response->getHeader('x-ms-ratelimit-microsoft.costmanagement-entity-retry-after');
         if (!empty($header)) {
-            return (int) $header[0];
+            return (int) $header[0] + 3;
         }
 
         return null;
