@@ -81,6 +81,8 @@ class Api
 
     private function doSendOneRequest(Request $request): ResponseInterface
     {
+        $maxRateLimitRetries = 7;
+        $rateLimitRetries = 0;
         while (true) {
             try {
                 return $this->client->send($request);
@@ -89,14 +91,20 @@ class Api
                 if ($e->getCode() === 429) {
                     $retryAfter = $this->extractRetryAfterSeconds($e->getResponse());
                     if ($retryAfter !== null) {
+                        $rateLimitRetries++;
+                        if ($rateLimitRetries > $maxRateLimitRetries) {
+                            throw $this->processException($request, $e);
+                        }
                         $rateLimitInfo = $this->formatRateLimitHeaders($e->getResponse());
                         $this->logger->info(sprintf(
-                            'Rate limit exceeded (429), waiting %d seconds before retry. %s',
+                            'Rate limit exceeded (429), waiting %d seconds before retry (attempt %d/%d). %s',
                             $retryAfter,
+                            $rateLimitRetries,
+                            $maxRateLimitRetries,
                             $rateLimitInfo
                         ));
                         sleep($retryAfter);
-                        continue; // Retry immediately without counting against maxTries
+                        continue;
                     }
                 }
 
@@ -231,7 +239,7 @@ class Api
         // Check for the Azure Cost Management specific retry-after header
         $header = $response->getHeader('x-ms-ratelimit-microsoft.costmanagement-entity-retry-after');
         if (!empty($header)) {
-            return (int) $header[0] + 3;
+            return (int) $header[0] + 3; // waiting for 3 more seconds for safety
         }
 
         return null;
