@@ -75,6 +75,24 @@ class Api
             });
             return $response;
         } catch (ExportRequestException $e) {
+            // A 429 that survived every retry is an upstream throttle, not a bug in the extractor.
+            // Surface it as a user error (exit code 1) with an actionable message, instead of
+            // an opaque application error (exit code 2).
+            if ($e->getCode() === 429) {
+                throw new UserException(
+                    sprintf(
+                        'Azure Cost Management API rate limit was reached and did not clear after %d tries. '
+                        . 'These limits are shared by all requests in your Azure tenant. Please run this '
+                        . 'configuration less often, schedule it apart from your other Azure Cost Management '
+                        . 'configurations, or increase the "maxTries" parameter. Details: %s',
+                        $this->config->getMaxTries(),
+                        $e->getMessage()
+                    ),
+                    $e->getCode(),
+                    $e
+                );
+            }
+
             throw $this->isUserException($e) ? new UserException($e->getMessage(), $e->getCode(), $e) : $e;
         }
     }
@@ -230,6 +248,21 @@ class Api
         return 'Rate limit headers: ' . implode('; ', $rateLimitHeaders);
     }
 
+    /**
+     * Azure Cost Management throttles per entity, but also per QPU, per tenant and per client,
+     * and reports the wait time in a different header for each scope. Only the entity scope
+     * was read, so a tenant/client/QPU throttle (the limits are shared across the whole
+     * tenant) looked like "429 without Retry-After" and fell back to blind exponential
+     * backoff, which is often far shorter than the wait Azure actually asked for.
+     * @see https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/get-small-usage-datasets-on-demand
+     */
+    private const FALLBACK_RETRY_AFTER_HEADERS = [
+        'x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-client-retry-after',
+        'Retry-After',
+    ];
+
     private function extractRetryAfterSeconds(?ResponseInterface $response): ?int
     {
         if (!$response) {
@@ -240,6 +273,16 @@ class Api
         $header = $response->getHeader('x-ms-ratelimit-microsoft.costmanagement-entity-retry-after');
         if (!empty($header)) {
             return (int) $header[0] + 3; // waiting for 3 more seconds for safety
+        }
+
+        // The entity header is absent, so this is a throttle at another scope.
+        // Honour the first other scope header that carries a numeric delay,
+        // instead of falling through to blind exponential backoff.
+        foreach (self::FALLBACK_RETRY_AFTER_HEADERS as $headerName) {
+            $header = $response->getHeader($headerName);
+            if (!empty($header) && is_numeric($header[0])) {
+                return (int) $header[0] + 3; // waiting for 3 more seconds for safety
+            }
         }
 
         return null;
