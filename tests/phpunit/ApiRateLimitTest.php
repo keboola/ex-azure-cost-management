@@ -31,13 +31,21 @@ class ApiRateLimitTest extends TestCase
     private const ENTITY_RETRY_AFTER = 'x-ms-ratelimit-microsoft.costmanagement-entity-retry-after';
 
     /**
+     * extractRetryAfterSeconds() adds a 3 second safety buffer to the value it reads, so "-3"
+     * makes the computed delay exactly 0 and sleep() a no-op. The header is still parsed, so a
+     * test using this value still proves the scope is recognised and the request is retried.
+     * One test below deliberately uses a real delay to cover the waiting path itself.
+     */
+    private const NO_WAIT = '-3';
+
+    /**
      * The entity scope header was already honoured before this test existed.
      * It is asserted here so the previously working path stays covered.
      */
     public function testEntityScopeRetryAfterHeaderIsHonoured(): void
     {
         $api = $this->createApi([
-            new Response(429, [self::ENTITY_RETRY_AFTER => '0'], self::THROTTLED_BODY),
+            new Response(429, [self::ENTITY_RETRY_AFTER => self::NO_WAIT], self::THROTTLED_BODY),
             new Response(200, [], self::OK_BODY),
         ]);
 
@@ -58,7 +66,7 @@ class ApiRateLimitTest extends TestCase
     public function testNonEntityScopeRetryAfterHeaderIsHonoured(string $header): void
     {
         $api = $this->createApi([
-            new Response(429, [$header => '0'], self::THROTTLED_BODY),
+            new Response(429, [$header => self::NO_WAIT], self::THROTTLED_BODY),
             new Response(200, [], self::OK_BODY),
         ]);
 
@@ -74,11 +82,42 @@ class ApiRateLimitTest extends TestCase
     public function provideNonEntityRetryAfterHeaders(): array
     {
         return [
-            'qpu scope' => ['x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after'],
-            'tenant scope' => ['x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after'],
+            // The scope actually seen on throttled production responses.
+            'clienttype scope' => ['x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after'],
             'client scope' => ['x-ms-ratelimit-microsoft.costmanagement-client-retry-after'],
+            'tenant scope' => ['x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after'],
+            'qpu scope' => ['x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after'],
             'standard header' => ['Retry-After'],
         ];
+    }
+
+    /**
+     * Replays the header set seen on the throttled responses that were killing production jobs:
+     * no entity scoped retry-after, but a clienttype scoped one. Several "remaining" headers with
+     * non numeric values are present too, and must not be mistaken for a delay.
+     *
+     * This is the one case that uses a real delay, so the waiting path is covered as well.
+     */
+    public function testThrottledResponseWithoutEntityHeaderIsRetried(): void
+    {
+        $throttledHeaders = [
+            'x-ms-ratelimit-remaining-microsoft.costmanagement-entity-requests' => 'DefaultQuota:3',
+            'x-ms-ratelimit-remaining-microsoft.costmanagement-tenant-requests' => 'DefaultQuota:19',
+            'x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after' => '0',
+            'x-ms-ratelimit-remaining-microsoft.costmanagement-clienttype-requests' => 'DefaultQuota:0',
+            'x-ms-ratelimit-microsoft.costmanagement-qpu-consumed' => '1',
+            'x-ms-ratelimit-microsoft.costmanagement-qpu-remaining' => 'QueriesPerHour:577,QueriesPerMin:59',
+            'x-ms-ratelimit-remaining-subscription-resource-requests' => '1099',
+        ];
+
+        $api = $this->createApi([
+            new Response(429, $throttledHeaders, self::THROTTLED_BODY),
+            new Response(200, [], self::OK_BODY),
+        ]);
+
+        $response = $api->sendOneRequest(new Request('POST', 'query'));
+
+        Assert::assertSame(200, $response->getStatusCode());
     }
 
     /**

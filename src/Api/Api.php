@@ -249,17 +249,20 @@ class Api
     }
 
     /**
-     * Azure Cost Management throttles per entity, but also per QPU, per tenant and per client,
-     * and reports the wait time in a different header for each scope. Only the entity scope
-     * was read, so a tenant/client/QPU throttle (the limits are shared across the whole
-     * tenant) looked like "429 without Retry-After" and fell back to blind exponential
-     * backoff, which is often far shorter than the wait Azure actually asked for.
+     * Azure Cost Management throttles at several scopes and reports the wait time in a
+     * different header for each. Only the entity scope was read, so a throttle at any other
+     * scope looked like "429 without Retry-After" and fell back to blind exponential backoff,
+     * which is often far shorter than the wait Azure actually asked for.
+     *
+     * The "clienttype" scope is the one seen in practice next to the entity scope; the rest
+     * are listed as documented fallbacks. Note the name is "clienttype", not "client".
      * @see https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/get-small-usage-datasets-on-demand
      */
     private const FALLBACK_RETRY_AFTER_HEADERS = [
-        'x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after',
-        'x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after',
         'x-ms-ratelimit-microsoft.costmanagement-client-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after',
         'Retry-After',
     ];
 
