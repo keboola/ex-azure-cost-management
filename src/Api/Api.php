@@ -23,6 +23,50 @@ use Keboola\Component\UserException;
 
 class Api
 {
+    /**
+     * Azure Cost Management throttles at several scopes and reports the wait time in a
+     * different header for each scope. Only the entity scope used to be read, so a throttle at
+     * any other scope looked like "429 without Retry-After" and fell back to blind exponential
+     * backoff, which is often far shorter than the wait Azure actually asked for.
+     *
+     * All scopes are read and the longest requested wait wins, because a response can carry
+     * several scopes at once with different values. Note the name is "clienttype", not "client".
+     * @see https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/get-small-usage-datasets-on-demand
+     */
+    private const RETRY_AFTER_HEADERS = [
+        'x-ms-ratelimit-microsoft.costmanagement-entity-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-client-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after',
+        'x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after',
+        'Retry-After',
+    ];
+
+    /** Added to the wait the API asks for, as a safety margin. */
+    private const RATE_LIMIT_WAIT_SAFETY_SECONDS = 3;
+
+    /**
+     * Every 429 waits at least this long. Azure Cost Management enforces its limits over
+     * windows of roughly 30-60 seconds, so a shorter wait is throttled again and only burns
+     * a retry. This is also the wait used when no scope reports a value we can read.
+     */
+    private const MIN_RATE_LIMIT_WAIT_SECONDS = 30;
+
+    /**
+     * A single 429 never waits longer than this, whatever the API asks for. Azure can report a
+     * wait tied to an hourly quota; without a cap one throttled request could hold the job for
+     * hours. Waiting less than asked is safe - the request is simply throttled again and waits
+     * again, within the retry budget below.
+     */
+    private const MAX_RATE_LIMIT_WAIT_SECONDS = 120;
+
+    /**
+     * Lower bound of the 429 retry budget. A rate limit is not an error in the extractor, so it
+     * gets its own budget instead of consuming the generic "maxTries" retries. A user who needs
+     * more headroom can raise "maxTries" above this value.
+     */
+    private const MIN_RATE_LIMIT_RETRIES = 7;
+
     private LoggerInterface $logger;
 
     private Config $config;
@@ -85,7 +129,7 @@ class Api
                         . 'These limits are shared by all requests in your Azure tenant. Please run this '
                         . 'configuration less often, schedule it apart from your other Azure Cost Management '
                         . 'configurations, or increase the "maxTries" parameter. Details: %s',
-                        $this->config->getMaxTries(),
+                        $this->getRateLimitRetryBudget(),
                         $e->getMessage()
                     ),
                     $e->getCode(),
@@ -97,60 +141,57 @@ class Api
         }
     }
 
+    /**
+     * Seam for the tests, so they can assert the requested waits without really sleeping.
+     */
+    protected function waitForRateLimit(int $seconds): void
+    {
+        sleep($seconds);
+    }
+
     private function doSendOneRequest(Request $request): ResponseInterface
     {
-        $maxRateLimitRetries = 7;
+        $maxRateLimitRetries = $this->getRateLimitRetryBudget();
         $rateLimitRetries = 0;
         while (true) {
             try {
                 return $this->client->send($request);
             } catch (RequestException $e) {
-                // Handle 429 with Retry-After header specially - don't count against retry limit
-                if ($e->getCode() === 429) {
-                    $retryAfter = $this->extractRetryAfterSeconds($e->getResponse());
-                    if ($retryAfter !== null) {
-                        $rateLimitRetries++;
-                        if ($rateLimitRetries > $maxRateLimitRetries) {
-                            throw $this->processException($request, $e);
-                        }
-                        $rateLimitInfo = $this->formatRateLimitHeaders($e->getResponse());
-                        $this->logger->info(sprintf(
-                            'Rate limit exceeded (429), waiting %d seconds before retry (attempt %d/%d). %s',
-                            $retryAfter,
-                            $rateLimitRetries,
-                            $maxRateLimitRetries,
-                            $rateLimitInfo
-                        ));
-                        sleep($retryAfter);
-                        continue;
-                    }
+                // All errors other than a rate limit go through normal exception processing
+                if ($e->getCode() !== 429) {
+                    throw $this->processException($request, $e);
                 }
 
-                // All other errors go through normal exception processing
-                throw $this->processException($request, $e);
+                // A rate limit is handled here, in its own retry budget, so it does not consume
+                // the generic "maxTries" retries of the retry proxy.
+                $rateLimitRetries++;
+                if ($rateLimitRetries > $maxRateLimitRetries) {
+                    // The budget is used up. Throw an exception the retry proxy does NOT retry,
+                    // otherwise it would run this whole loop again for every remaining try.
+                    // sendOneRequest() turns this into a UserException.
+                    throw new ExportRequestException(
+                        $this->formatErrorMessage($request, $e),
+                        $e->getCode(),
+                        $e
+                    );
+                }
+
+                $waitSeconds = $this->resolveRateLimitWaitSeconds($e->getResponse());
+                $this->logger->info(sprintf(
+                    'Rate limit exceeded (429), waiting %d seconds before retry (attempt %d/%d). %s',
+                    $waitSeconds,
+                    $rateLimitRetries,
+                    $maxRateLimitRetries,
+                    $this->formatRateLimitHeaders($e->getResponse())
+                ));
+                $this->waitForRateLimit($waitSeconds);
             }
         }
     }
 
     private function processException(Request $request, RequestException $exception): Throwable
     {
-        // Rewind body stream
-        $requestBody = $request->getBody();
-        $requestBody->rewind();
-
-        // Format error from the response, or use exception message
-        $error = $this->getMessageFromResponse($exception->getResponse()) ?:
-            sprintf('message=%s', $exception->getMessage());
-
-        // Format full exception message
-        $msg = sprintf(
-            'Export "%s" failed: http_code="%d", %s, request_body="%s", uri="%s"',
-            $this->config->getDestination(),
-            $exception->getCode(),
-            $error,
-            $requestBody->getContents(),
-            $exception->getRequest()->getUri()
-        );
+        $msg = $this->formatErrorMessage($request, $exception);
 
         // In case of error 401 try to log in again, the token maybe expired
         if ($exception->getCode() === 401) {
@@ -163,21 +204,32 @@ class Api
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
-        if ($exception->getCode() === 429) {
-            // 429 without Retry-After header - use exponential backoff (counts against maxTries)
-            $rateLimitInfo = $this->formatRateLimitHeaders($exception->getResponse());
-            $this->logger->info(sprintf(
-                'Rate limit exceeded (429) without Retry-After header, will retry with backoff. %s',
-                $rateLimitInfo
-            ));
-            return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
-        }
-
         if ($this->isRetryException($exception)) {
             return new ExportRequestRetryException($msg, $exception->getCode(), $exception);
         }
 
         return new ExportRequestException($msg, $exception->getCode(), $exception);
+    }
+
+    private function formatErrorMessage(Request $request, RequestException $exception): string
+    {
+        // Rewind body stream
+        $requestBody = $request->getBody();
+        $requestBody->rewind();
+
+        // Format error from the response, or use exception message
+        $error = $this->getMessageFromResponse($exception->getResponse()) ?:
+            sprintf('message=%s', $exception->getMessage());
+
+        // Format full exception message
+        return sprintf(
+            'Export "%s" failed: http_code="%d", %s, request_body="%s", uri="%s"',
+            $this->config->getDestination(),
+            $exception->getCode(),
+            $error,
+            $requestBody->getContents(),
+            $exception->getRequest()->getUri()
+        );
     }
 
     private function getMessageFromResponse(?ResponseInterface $response): ?string
@@ -249,46 +301,42 @@ class Api
     }
 
     /**
-     * Azure Cost Management throttles at several scopes and reports the wait time in a
-     * different header for each. Only the entity scope was read, so a throttle at any other
-     * scope looked like "429 without Retry-After" and fell back to blind exponential backoff,
-     * which is often far shorter than the wait Azure actually asked for.
+     * How long to wait before retrying a rate limited (429) request.
      *
-     * The "clienttype" scope is the one seen in practice next to the entity scope; the rest
-     * are listed as documented fallbacks. Note the name is "clienttype", not "client".
-     * @see https://learn.microsoft.com/en-us/azure/cost-management-billing/automate/get-small-usage-datasets-on-demand
+     * The longest wait requested by any scope wins, plus a safety margin, bounded by
+     * MIN_RATE_LIMIT_WAIT_SECONDS and MAX_RATE_LIMIT_WAIT_SECONDS. When no scope reports a
+     * value that can be read as seconds, the minimum is used.
      */
-    private const FALLBACK_RETRY_AFTER_HEADERS = [
-        'x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after',
-        'x-ms-ratelimit-microsoft.costmanagement-client-retry-after',
-        'x-ms-ratelimit-microsoft.costmanagement-tenant-retry-after',
-        'x-ms-ratelimit-microsoft.costmanagement-qpu-retry-after',
-        'Retry-After',
-    ];
-
-    private function extractRetryAfterSeconds(?ResponseInterface $response): ?int
+    private function resolveRateLimitWaitSeconds(?ResponseInterface $response): int
     {
-        if (!$response) {
-            return null;
-        }
-
-        // Check for the Azure Cost Management specific retry-after header
-        $header = $response->getHeader('x-ms-ratelimit-microsoft.costmanagement-entity-retry-after');
-        if (!empty($header)) {
-            return (int) $header[0] + 3; // waiting for 3 more seconds for safety
-        }
-
-        // The entity header is absent, so this is a throttle at another scope.
-        // Honour the first other scope header that carries a numeric delay,
-        // instead of falling through to blind exponential backoff.
-        foreach (self::FALLBACK_RETRY_AFTER_HEADERS as $headerName) {
-            $header = $response->getHeader($headerName);
-            if (!empty($header) && is_numeric($header[0])) {
-                return (int) $header[0] + 3; // waiting for 3 more seconds for safety
+        $requestedSeconds = null;
+        foreach (self::RETRY_AFTER_HEADERS as $headerName) {
+            $values = $response !== null ? $response->getHeader($headerName) : [];
+            if ($values === [] || !is_numeric($values[0])) {
+                // The standard Retry-After header also allows an HTTP date, and the
+                // "...-remaining-..." headers carry values like "DefaultQuota:3".
+                // Neither is a number of seconds, so neither must be read as one.
+                continue;
             }
+
+            $seconds = (int) $values[0];
+            $requestedSeconds = $requestedSeconds === null ? $seconds : max($requestedSeconds, $seconds);
         }
 
-        return null;
+        if ($requestedSeconds === null) {
+            return self::MIN_RATE_LIMIT_WAIT_SECONDS;
+        }
+
+        $waitSeconds = $requestedSeconds + self::RATE_LIMIT_WAIT_SAFETY_SECONDS;
+        return min(
+            max($waitSeconds, self::MIN_RATE_LIMIT_WAIT_SECONDS),
+            self::MAX_RATE_LIMIT_WAIT_SECONDS
+        );
+    }
+
+    private function getRateLimitRetryBudget(): int
+    {
+        return max(self::MIN_RATE_LIMIT_RETRIES, $this->config->getMaxTries());
     }
 
     private function createRetryProxy(): RetryProxy
