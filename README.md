@@ -17,6 +17,7 @@ The configuration `config.json` contains following properties in `parameters` ke
     - `username` - string (required): Username of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
     - `#password` - string (required): Password of the [Service Principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals).
 - `maxTries` - integer (optional): Number of the max tries if an error occurred. Default `5`.
+  It is also the lower bound of the separate retry budget used for API rate limits, see below.
  
 - `export` - object (required): Configuration of the export.
     - `destination` - string (required): Name of the target table in the bucket.
@@ -82,6 +83,31 @@ Set the required scopes in the Azure Portal in the settings of the OAuth applica
     2. Run script `utils/oauth-login.sh`
     3. Follow the instructions (open the URL and login)
     4. Save tokens to `.env` file
+
+## Rate limits
+
+The Azure Cost Management API limits how many cost queries you can run, and the limits are shared
+by every request in your Azure tenant. When a query is throttled the API answers `429` and reports
+how long to wait in a scope specific header, for example
+`x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after`.
+
+The extractor handles a `429` like this:
+
+- It reads every `...-retry-after` header the response carries, and waits for the longest value,
+  plus 3 seconds.
+- It waits at least 30 seconds, because the limits are enforced over windows of roughly
+  30-60 seconds. A shorter wait is throttled again and only wastes a retry. The same 30 seconds
+  are used when no header reports a value that can be read as seconds.
+- It waits at most 120 seconds for one `429`, so a limit tied to an hourly quota cannot hold
+  the job for hours. The request is simply throttled again and waits again.
+- Rate limits have their own retry budget, so they do not consume the `maxTries` retries used for
+  other errors. The budget is 7 tries, or `maxTries` if you set it higher.
+- If the limit does not clear inside that budget, the job fails with a user error that names the
+  rate limit. Run the configuration less often, schedule it apart from your other Azure Cost
+  Management configurations, or raise `maxTries`.
+
+Throttled jobs take longer than they used to, because the extractor now waits as long as the API
+asks. This is deliberate: the job is much more likely to finish instead of failing.
 
 ## Development
  
