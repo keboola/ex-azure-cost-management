@@ -91,6 +91,11 @@ by every request in your Azure tenant. When a query is throttled the API answers
 how long to wait in a scope specific header, for example
 `x-ms-ratelimit-microsoft.costmanagement-clienttype-retry-after`.
 
+The extractor sends a `ClientType` request header identifying this component and your subscription.
+Azure applies a separate rate limit quota per `ClientType`, so the extractor no longer shares one
+quota with every other caller that sends none. This lowers how often a query is throttled; it does
+not remove the limit.
+
 The extractor handles a `429` like this:
 
 - It reads every `...-retry-after` header the response carries, and waits for the longest value,
