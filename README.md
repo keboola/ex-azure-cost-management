@@ -29,7 +29,8 @@ The configuration `config.json` contains following properties in `parameters` ke
     - `granularity` - enum (optional): One from: `None`, `Daily`, `Monthly`.
     - `incremental` - boolean (optional): Enables [Incremental Loading](https://help.keboola.com/storage/tables/#incremental-loading). Default `true`.
     - `timeDimension` - object (optional): Time dimensions of the export.
-        - `timeFrame` - enum (optional): One from: `MonthToDate` - default, `WeekToDate`, `BillingMonthToDate`, `TheLastMonth`, `TheLastBillingMonth`, `Custom`.
+        - `timeFrame` - enum (optional): One from: `MonthToDate` - default, `WeekToDate`, `BillingMonthToDate`, `TheLastBillingMonth`, `Custom`.
+            - **Note:** `TheLastMonth` is no longer supported by Azure Cost Management API. Use `TheLastBillingMonth` instead.
         - `start` - string (optional): Start date of the `Custom` time frame in `YYYY-MM-DD` format.
         - `end` - string (optional): End date of the `Custom` time frame in `YYYY-MM-DD` format.
 
@@ -116,4 +117,4 @@ docker-compose run --rm dev composer tests
 
 # Integration
 
-For information about deployment and integration with KBC, please refer to the [deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/)  
+For information about deployment and integration with KBC, please refer to the [deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/)    
